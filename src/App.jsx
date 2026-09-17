@@ -13,7 +13,6 @@ import ConsultationCTA from './components/ConsultationCTA';
 import ProductCatalog from './components/ProductCatalog';
 import ServicesPage from './components/ServicesPage';
 import BlogPage from './components/BlogPage';
-import TestimonialsPage from './components/TestimonialsPage';
 import AboutPage from './components/AboutPage';
 import ContactPage from './components/ContactPage';
 
@@ -25,13 +24,21 @@ import CheckoutPage from './components/CheckoutPage';
 import WishlistPage from './components/WishlistPage';
 import AccountPage from './components/AccountPage';
 import ConsultationModal from './components/ConsultationModal';
+import CustomerAuthModal from './components/CustomerAuthModal';
+import ForgotPasswordModal from './components/ForgotPasswordModal';
+import AdminLoginPage from './components/admin/AdminLoginPage';
+import AdminDashboard from './components/admin/AdminDashboard';
 import Footer from './components/Footer';
 
+import { useAuth } from './context/AuthContext';
+import { api } from './services/api';
 import { products } from './data/products';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, User } from 'lucide-react';
 
 export default function App() {
-  // Page view state: 'home' | 'catalog' | 'services' | 'blogs' | 'testimonials' | 'about' | 'contact' | 'product-detail' | 'article-detail' | 'request-sample' | 'cart' | 'checkout' | 'wishlist' | 'account'
+  const { customer, admin, customerLogout, adminLogout } = useAuth();
+
+  // Page view state: 'home' | 'catalog' | 'services' | 'blogs' | 'testimonials' | 'about' | 'contact' | 'product-detail' | 'article-detail' | 'request-sample' | 'cart' | 'checkout' | 'wishlist' | 'account' | 'admin' | 'admin-login'
   const [currentPage, setCurrentPage] = useState('home');
   const [catalogFilters, setCatalogFilters] = useState({
     category: 'all',
@@ -42,61 +49,144 @@ export default function App() {
   const [activeProduct, setActiveProduct] = useState(null);
   const [activeArticle, setActiveArticle] = useState(null);
   const [isConsultationOpen, setIsConsultationOpen] = useState(false);
+  const [isCustomerAuthOpen, setIsCustomerAuthOpen] = useState(false);
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
 
-  // Cart / RFQ State (Frontend Demo)
-  const [cartItems, setCartItems] = useState([
-    {
-      ...products[0],
-      quantity: 1
+  // Cart / RFQ State - Persistent localStorage backed, defaults to empty []
+  const [cartItems, setCartItems] = useState(() => {
+    try {
+      const saved = localStorage.getItem('forge3d_local_cart');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {
+      console.warn('Failed to parse saved cart:', e);
     }
-  ]);
-
-  // Wishlist State (Frontend Demo)
-  const [wishlistItems, setWishlistItems] = useState([products[1].id]);
-
-  // User Profile State (Shared between Account & Checkout autofill)
-  const [userProfile, setUserProfile] = useState({
-    firstName: 'Richard',
-    lastName: 'Davies',
-    company: 'Apex Precision Engineering Ltd',
-    email: 'r.davies@apexengineering.co.uk',
-    phone: '+44 (0) 121 555 0192',
-    address: 'Unit 12, Innovation Business Park',
-    city: 'Birmingham',
-    postcode: 'B45 9AG'
+    return [];
   });
 
-  // Recent Orders State (With real products & images)
-  const [orders, setOrders] = useState([
-    {
-      id: 'F3D-ORD-882410',
-      date: '04 Sep 2026',
-      status: 'Delivered',
-      total: '£4,850.00',
-      product: products[0],
-      productName: products[0].name,
-      brand: products[0].brand,
-      image: (products[0].images && products[0].images[0]) || products[0].image,
-      quantity: 1,
-      specs: '420°C Hotend • Carbon Fiber Ready'
-    },
-    {
-      id: 'F3D-ORD-774902',
-      date: '18 Aug 2026',
-      status: 'Delivered',
-      total: '£3,290.00',
-      product: products[1],
-      productName: products[1].name,
-      brand: products[1].brand,
-      image: (products[1].images && products[1].images[0]) || products[1].image,
-      quantity: 1,
-      specs: 'Dual Extrusion • 300x300x300mm'
+  // Always keep localStorage in sync with cartItems
+  useEffect(() => {
+    try {
+      localStorage.setItem('forge3d_local_cart', JSON.stringify(cartItems));
+    } catch (e) {}
+  }, [cartItems]);
+
+  // Wishlist State - clean empty default for every user
+  const [wishlistItems, setWishlistItems] = useState(() => {
+    try {
+      const saved = localStorage.getItem('forge3d_local_wishlist');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {}
+    return [];
+  });
+
+  // Always keep localStorage in sync with wishlistItems
+  useEffect(() => {
+    try {
+      localStorage.setItem('forge3d_local_wishlist', JSON.stringify(wishlistItems));
+    } catch (e) {}
+  }, [wishlistItems]);
+
+  // User Profile State (Shared between Account & Checkout autofill)
+  const [userProfile, setUserProfile] = useState(() => ({
+    firstName: customer?.firstName || '',
+    lastName: customer?.lastName || '',
+    company: customer?.company || '',
+    email: customer?.email || '',
+    phone: customer?.phone || '',
+    address: customer?.address || '',
+    city: customer?.city || '',
+    postcode: customer?.postcode || ''
+  }));
+
+  // Keep userProfile in sync with customer
+  useEffect(() => {
+    if (customer) {
+      setUserProfile({
+        firstName: customer.firstName || '',
+        lastName: customer.lastName || '',
+        company: customer.company || '',
+        email: customer.email || '',
+        phone: customer.phone || '',
+        address: customer.address || '',
+        city: customer.city || '',
+        postcode: customer.postcode || ''
+      });
+    } else {
+      setUserProfile({
+        firstName: '',
+        lastName: '',
+        company: '',
+        email: '',
+        phone: '',
+        address: '',
+        city: '',
+        postcode: ''
+      });
     }
-  ]);
+  }, [customer]);
+
+  // Sync cart & wishlist from backend when customer is logged in
+  useEffect(() => {
+    if (customer) {
+      api.cart.get()
+        .then(res => {
+          const items = Array.isArray(res) ? res : (res?.items || []);
+          if (items.length > 0) {
+            setCartItems(items.map(item => ({
+              id: item.id || item.productId,
+              name: item.name,
+              brand: item.brand,
+              category: item.category,
+              categoryName: item.categoryName,
+              price: item.price,
+              currency: item.currency || '£',
+              image: item.image,
+              images: item.images || [item.image],
+              specs: item.specs,
+              quoteOnly: !!item.quoteOnly,
+              inStock: item.inStock !== false,
+              quantity: item.quantity || 1
+            })));
+          } else {
+            // Backend cart is empty (e.g. after order placement)
+            setCartItems([]);
+          }
+        })
+        .catch(() => {});
+
+      api.wishlist.get()
+        .then(res => {
+          const items = Array.isArray(res) ? res : (res?.items || []);
+          setWishlistItems(items.map(i => i.id || i.productId));
+        })
+        .catch(() => {
+          setWishlistItems([]);
+        });
+    } else {
+      // Clear cart & wishlist completely when no user is logged in
+      setCartItems([]);
+      setWishlistItems([]);
+      try {
+        localStorage.removeItem('forge3d_local_cart');
+        localStorage.removeItem('forge3d_local_wishlist');
+      } catch (e) {}
+    }
+  }, [customer]);
+
+  // Recent Orders State
+  const [orders, setOrders] = useState([]);
 
   const handleOrderPlaced = (newOrder) => {
     setOrders(prev => [newOrder, ...prev]);
     showToast(`Order ${newOrder.id} placed and recorded in your Account`);
+    handleClearCart();
+    window.dispatchEvent(new CustomEvent('forge3d_products_updated'));
   };
 
   const [toastMessage, setToastMessage] = useState(null);
@@ -112,6 +202,41 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentPage]);
 
+  // URL Hash listener for direct navigation
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash.replace('#/', '').replace('#', '');
+      if (hash === 'admin' || hash === 'admin-dashboard') {
+        setCurrentPage('admin');
+      } else if (hash === 'admin-login') {
+        setCurrentPage('admin-login');
+      } else if (hash === 'account') {
+        setCurrentPage('account');
+      } else if (hash === 'cart') {
+        setCurrentPage('cart');
+      } else if (hash === 'checkout') {
+        setCurrentPage('checkout');
+      } else if (hash === 'wishlist') {
+        setCurrentPage('wishlist');
+      } else if (hash === 'catalog') {
+        setCurrentPage('catalog');
+      } else if (hash === 'services') {
+        setCurrentPage('services');
+      } else if (hash === 'blogs') {
+        setCurrentPage('blogs');
+      } else if (hash === 'about') {
+        setCurrentPage('about');
+      } else if (hash === 'contact') {
+        setCurrentPage('contact');
+      } else if (hash === 'request-sample') {
+        setCurrentPage('request-sample');
+      }
+    };
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+
   const handleNavigate = (page, options = {}) => {
     if (page === 'brands') {
       if (currentPage !== 'home') {
@@ -126,6 +251,7 @@ export default function App() {
       return;
     }
 
+    window.location.hash = `#/${page}`;
     setCurrentPage(page);
     if (page === 'catalog') {
       setCatalogFilters({
@@ -137,21 +263,11 @@ export default function App() {
   };
 
   const handleSelectCategory = (categoryId) => {
-    setCurrentPage('catalog');
-    setCatalogFilters({
-      category: categoryId,
-      brand: null,
-      search: ''
-    });
+    handleNavigate('catalog', { category: categoryId });
   };
 
   const handleSelectBrand = (brandName) => {
-    setCurrentPage('catalog');
-    setCatalogFilters({
-      category: 'all',
-      brand: brandName,
-      search: ''
-    });
+    handleNavigate('catalog', { brand: brandName });
   };
 
   const handleSelectProduct = (product) => {
@@ -166,7 +282,6 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Modern ecommerce flow: Adding item auto-opens the Cart Drawer!
   const handleAddToCart = (product, quantity = 1) => {
     setCartItems(prev => {
       const existing = prev.find(item => item.id === product.id);
@@ -179,6 +294,10 @@ export default function App() {
       }
       return [...prev, { ...product, quantity }];
     });
+
+    if (customer) {
+      api.cart.add(product.id, quantity).catch(() => {});
+    }
 
     showToast(
       product.quoteOnly
@@ -198,10 +317,18 @@ export default function App() {
         return [...prev, product.id];
       }
     });
+
+    if (customer) {
+      api.wishlist.toggle(product.id).catch(() => {});
+    }
   };
 
   const handleAccountClick = () => {
-    handleNavigate('account');
+    if (customer) {
+      handleNavigate('account');
+    } else {
+      setIsCustomerAuthOpen(true);
+    }
   };
 
   const handleUpdateQuantity = (productId, quantity) => {
@@ -212,15 +339,58 @@ export default function App() {
     setCartItems(prev =>
       prev.map(item => item.id === productId ? { ...item, quantity } : item)
     );
+    if (customer) {
+      api.cart.update(productId, quantity).catch(() => {});
+    }
   };
 
   const handleRemoveFromCart = (productId) => {
     setCartItems(prev => prev.filter(item => item.id !== productId));
+    if (customer) {
+      api.cart.remove(productId).catch(() => {});
+    }
   };
 
   const handleClearCart = () => {
     setCartItems([]);
+    try {
+      localStorage.setItem('forge3d_local_cart', JSON.stringify([]));
+    } catch (e) {}
+    api.cart.clear().catch(() => {});
   };
+
+  // Dedicated Admin Console routing (isolated from customer layout)
+  if (currentPage === 'admin') {
+    if (!admin) {
+      return (
+        <AdminLoginPage
+          onLoginSuccess={() => setCurrentPage('admin')}
+          onNavigateStore={() => handleNavigate('home')}
+        />
+      );
+    }
+    return (
+      <AdminDashboard
+        onNavigateStore={() => handleNavigate('home')}
+      />
+    );
+  }
+
+  if (currentPage === 'admin-login') {
+    if (admin) {
+      return (
+        <AdminDashboard
+          onNavigateStore={() => handleNavigate('home')}
+        />
+      );
+    }
+    return (
+      <AdminLoginPage
+        onLoginSuccess={() => setCurrentPage('admin')}
+        onNavigateStore={() => handleNavigate('home')}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-clip flex flex-col bg-surface-50 text-surface-900 font-sans antialiased">
@@ -245,6 +415,14 @@ export default function App() {
         onSelectProduct={handleSelectProduct}
         onOpenConsultation={() => setIsConsultationOpen(true)}
         onAccountClick={handleAccountClick}
+        customer={customer}
+        onOpenCustomerAuth={() => {
+          if (customer) {
+            handleNavigate('account');
+          } else {
+            setIsCustomerAuthOpen(true);
+          }
+        }}
       />
 
       {/* Main View Flow */}
@@ -304,6 +482,7 @@ export default function App() {
         {/* Product Catalog Page */}
         {currentPage === 'catalog' && (
           <ProductCatalog
+            key={`catalog-${catalogFilters.category || 'all'}-${catalogFilters.brand || 'all'}-${catalogFilters.search || ''}`}
             initialCategory={catalogFilters.category}
             initialBrand={catalogFilters.brand}
             initialSearch={catalogFilters.search}
@@ -329,14 +508,6 @@ export default function App() {
           <BlogPage
             onNavigate={handleNavigate}
             onSelectArticle={handleSelectArticle}
-            onOpenConsultation={() => setIsConsultationOpen(true)}
-          />
-        )}
-
-        {/* Customer Testimonials & Reviews Page */}
-        {currentPage === 'testimonials' && (
-          <TestimonialsPage
-            onNavigate={handleNavigate}
             onOpenConsultation={() => setIsConsultationOpen(true)}
           />
         )}
@@ -425,14 +596,44 @@ export default function App() {
 
         {/* Dedicated Customer Account & Portal Page */}
         {currentPage === 'account' && (
-          <AccountPage
-            profile={userProfile}
-            onUpdateProfile={setUserProfile}
-            orders={orders}
-            onAddToCart={handleAddToCart}
-            onNavigate={handleNavigate}
-            onSelectProduct={handleSelectProduct}
-          />
+          customer ? (
+            <AccountPage
+              profile={userProfile}
+              onUpdateProfile={setUserProfile}
+              orders={orders}
+              onAddToCart={handleAddToCart}
+              onNavigate={handleNavigate}
+              onSelectProduct={handleSelectProduct}
+            />
+          ) : (
+            <div className="bg-surface-50 min-h-[60vh] py-16 flex items-center justify-center px-4 text-center">
+              <div className="bg-white border border-surface-200 shadow-sm rounded-2xl p-8 max-w-md w-full space-y-4">
+                <div className="w-14 h-14 bg-brand-50 border border-brand-200 text-brand-600 rounded-2xl flex items-center justify-center mx-auto">
+                  <User className="w-7 h-7" />
+                </div>
+                <div>
+                  <h2 className="font-display font-black text-2xl text-surface-900 tracking-tight">Customer Account Portal</h2>
+                  <p className="text-xs text-surface-500 mt-1">
+                    Please sign in to access your manufacturing orders, saved equipment quotations, and delivery profiles.
+                  </p>
+                </div>
+                <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
+                  <button
+                    onClick={() => setIsCustomerAuthOpen(true)}
+                    className="flex-1 py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm cursor-pointer"
+                  >
+                    Sign In / Register
+                  </button>
+                  <button
+                    onClick={() => handleNavigate('catalog')}
+                    className="py-3 px-4 bg-surface-100 hover:bg-surface-200 text-surface-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
+                  >
+                    Browse Equipment
+                  </button>
+                </div>
+              </div>
+            </div>
+          )
         )}
       </div>
 
@@ -443,10 +644,47 @@ export default function App() {
         onOpenConsultation={() => setIsConsultationOpen(true)}
       />
 
-      {/* Contact & Advice Modal (Pure Frontend) */}
+      {/* Consultation Modal */}
       <ConsultationModal
         isOpen={isConsultationOpen}
         onClose={() => setIsConsultationOpen(false)}
+      />
+
+      {/* Customer Authentication Modal (Sign In / Register) */}
+      <CustomerAuthModal
+        isOpen={isCustomerAuthOpen && !customer}
+        onClose={() => setIsCustomerAuthOpen(false)}
+        guestCart={cartItems}
+        guestWishlist={wishlistItems}
+        onOpenForgotPassword={() => {
+          setIsCustomerAuthOpen(false);
+          setIsForgotPasswordOpen(true);
+        }}
+        onSuccess={(newUser, isNewRegistration) => {
+          setIsCustomerAuthOpen(false);
+          if (isNewRegistration) {
+            setCartItems([]);
+            setWishlistItems([]);
+            try {
+              localStorage.removeItem('forge3d_local_cart');
+              localStorage.removeItem('forge3d_local_wishlist');
+            } catch (e) {}
+          }
+          if (newUser) {
+            handleNavigate('account');
+          }
+          showToast(isNewRegistration ? 'Account created successfully! Welcome to SOFT 3D.' : 'Signed in successfully');
+        }}
+      />
+
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal
+        isOpen={isForgotPasswordOpen}
+        onClose={() => setIsForgotPasswordOpen(false)}
+        onBackToLogin={() => {
+          setIsForgotPasswordOpen(false);
+          setIsCustomerAuthOpen(true);
+        }}
       />
 
     </div>

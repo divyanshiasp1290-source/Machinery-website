@@ -1,22 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Search, 
   Calendar, 
   BookOpen, 
   ChevronRight
 } from 'lucide-react';
-import { blogs, blogCategories } from '../data/blogs';
+import { api } from '../services/api';
+import { blogs as fallbackBlogs, blogCategories as defaultCategories } from '../data/blogs';
 
 export default function BlogPage({ onNavigate, onSelectArticle, onOpenConsultation }) {
+  const [articles, setArticles] = useState(() => fallbackBlogs);
   const [selectedCategory, setSelectedCategory] = useState('All Articles');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredBlogs = blogs.filter(article => {
+  const loadBlogs = async () => {
+    try {
+      const res = await api.blogs.list();
+      if (res?.blogs && res.blogs.length > 0) {
+        setArticles(res.blogs);
+      }
+    } catch (err) {
+      console.warn('Could not load blogs from Supabase:', err);
+    }
+  };
+
+  useEffect(() => {
+    loadBlogs();
+    const unsub = api.realtime.subscribeBlogs(() => {
+      loadBlogs();
+    });
+    return () => {
+      if (typeof unsub === 'function') unsub();
+    };
+  }, []);
+
+  const categories = useMemo(() => {
+    const cats = new Set(['All Articles']);
+    defaultCategories.forEach(c => cats.add(c));
+    articles.forEach(a => {
+      if (a.category) cats.add(a.category);
+    });
+    return Array.from(cats);
+  }, [articles]);
+
+  const filteredBlogs = articles.filter(article => {
     const matchesCat = selectedCategory === 'All Articles' || article.category === selectedCategory;
-    const matchesSearch = searchQuery.trim() === '' || 
-      article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      article.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      article.tag.toLowerCase().includes(searchQuery.toLowerCase());
+    const q = searchQuery.trim().toLowerCase();
+    const matchesSearch = !q || 
+      (article.title && article.title.toLowerCase().includes(q)) ||
+      (article.summary && article.summary.toLowerCase().includes(q)) ||
+      (article.tag && article.tag.toLowerCase().includes(q)) ||
+      (article.author && article.author.toLowerCase().includes(q));
     return matchesCat && matchesSearch;
   });
 
@@ -52,13 +86,13 @@ export default function BlogPage({ onNavigate, onSelectArticle, onOpenConsultati
         {/* Controls: Search & Category Tabs */}
         <div className="bg-white border border-surface-200 rounded-xl p-4 mb-8 shadow-xs flex flex-col md:flex-row gap-4 items-center justify-between">
           
-          {/* Category Tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-none">
-            {blogCategories.map((cat) => (
+          {/* Category Tabs - Wraps cleanly on mobile, no horizontal scroll */}
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full md:w-auto">
+            {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3.5 py-1.5 rounded text-xs font-bold whitespace-nowrap transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   selectedCategory === cat
                     ? 'bg-surface-900 text-white shadow-xs'
                     : 'bg-surface-100 text-surface-700 hover:bg-surface-200'

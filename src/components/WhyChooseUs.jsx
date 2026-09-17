@@ -35,10 +35,10 @@ export default function WhyChooseUs() {
             Built On Engineering Trust
           </span>
           <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-black text-surface-900 tracking-tight">
-            Why Partner with FORGE 3D
+            Why Partner with SOFT 3D
           </h2>
           <p className="text-sm sm:text-base text-surface-500 mt-2">
-            Trusted 3D printing equipment, engineering consultation, and UK after-sales support
+            Trusted 3D printing equipment, engineering consultation, and dedicated after-sales support
           </p>
         </div>
 

@@ -12,8 +12,13 @@ import {
   ArrowRight
 } from 'lucide-react';
 
+import { api } from '../services/api';
+import { businessHoursConfig, getFormattedBusinessHours } from '../config/businessHours';
+
 export default function RequestSamplePage({ onNavigate }) {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -24,10 +29,28 @@ export default function RequestSamplePage({ onNavigate }) {
     notes: ''
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setSubmitting(true);
+    setErrorMsg(null);
+    try {
+      await api.enquiries.submit({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        company: formData.company,
+        material: formData.material,
+        address: formData.address,
+        notes: formData.notes,
+        type: 'sample_request'
+      });
+      setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      setErrorMsg(err.message || 'Failed to submit sample request.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -231,14 +254,21 @@ export default function RequestSamplePage({ onNavigate }) {
                   />
                 </div>
 
+                {errorMsg && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-medium">
+                    {errorMsg}
+                  </div>
+                )}
+
                 {/* Submit Button */}
                 <div className="pt-2">
                   <button
                     type="submit"
-                    className="w-full h-12 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                    disabled={submitting}
+                    className="w-full h-12 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-98 disabled:opacity-50"
                   >
                     <Send className="w-4 h-4" />
-                    <span>Request Sample Part</span>
+                    <span>{submitting ? 'Submitting Request...' : 'Request Sample Part'}</span>
                   </button>
                 </div>
 
@@ -293,17 +323,12 @@ export default function RequestSamplePage({ onNavigate }) {
 
               <div className="pt-3 border-t border-surface-800 space-y-2 text-xs text-surface-300">
                 <div className="flex items-center gap-2.5">
-                  <Phone className="w-4 h-4 text-brand-400 shrink-0" />
-                  <a href="tel:+441215553820" className="hover:text-white transition-colors">+44 (0) 121 555 3820</a>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <Mail className="w-4 h-4 text-brand-400 shrink-0" />
-                  <a href="mailto:engineering@forge3d.co.uk" className="hover:text-white transition-colors">engineering@forge3d.co.uk</a>
-                </div>
-                <div className="flex items-center gap-2.5">
                   <Clock className="w-4 h-4 text-brand-400 shrink-0" />
-                  <span>Mon – Fri: 08:30 – 17:30 GMT</span>
+                  <span>{businessHoursConfig?.days || 'Mon – Fri'}: {getFormattedBusinessHours(businessHoursConfig)}</span>
                 </div>
+                <p className="text-[11px] text-surface-400 pt-1">
+                  Sample requests are reviewed by our application engineering team within 24 hours.
+                </p>
               </div>
             </div>
 

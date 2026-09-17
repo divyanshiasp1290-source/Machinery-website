@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" width="240" height="60">
+  <g transform="translate(8, 10)">
+    <polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="none" stroke="#0284C7" stroke-width="4.5" stroke-linejoin="round"/>
+    <circle cx="20" cy="22" r="7" fill="#0284C7" />
+    <line x1="20" y1="2" x2="20" y2="15" stroke="#0284C7" stroke-width="3.5" />
+    <line x1="38" y1="32" x2="26" y2="26" stroke="#0284C7" stroke-width="3.5" />
+    <line x1="2" y1="32" x2="14" y2="26" stroke="#0284C7" stroke-width="3.5" />
+  </g>
+  <text x="58" y="38" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="25" font-weight="900" letter-spacing="2" fill="#0F172A">INTAMSYS</text>
+</svg>

@@ -1,28 +1,98 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowRight } from 'lucide-react';
 import ProductCard from './ProductCard';
-import { products } from '../data/products';
+import { products as initialProducts } from '../data/products';
+import { categories as initialCategories } from '../data/categories';
+import { api } from '../services/api';
 
 export default function FeaturedProducts({ 
   onSelectProduct, 
-  onAddToCart,
-  onToggleWishlist,
-  wishlistItems = [],
+  onAddToCart, 
+  onToggleWishlist, 
+  wishlistItems = [], 
   onViewAllCatalog 
 }) {
+  const [featuredProducts, setFeaturedProducts] = useState(initialProducts);
+  const [categoriesList, setCategoriesList] = useState(initialCategories);
   const [selectedCategory, setSelectedCategory] = useState('all');
+
+  const loadData = () => {
+    api.products.list({ limit: 50 })
+      .then(res => {
+        if (res.products && res.products.length > 0) {
+          setFeaturedProducts(res.products);
+        }
+      })
+      .catch(() => {});
+
+    api.categories.list()
+      .then(cats => {
+        if (Array.isArray(cats) && cats.length > 0) {
+          setCategoriesList(cats);
+        }
+      })
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    loadData();
+
+    // Supabase Realtime live sync for products & categories
+    const unsubProducts = api.realtime.subscribeProducts(() => {
+      loadData();
+    });
+
+    const unsubCategories = api.realtime.subscribeCategories(() => {
+      loadData();
+    });
+
+    const handleStockUpdate = () => {
+      loadData();
+    };
+    window.addEventListener('forge3d_products_updated', handleStockUpdate);
+
+    return () => {
+      if (typeof unsubProducts === 'function') unsubProducts();
+      if (typeof unsubCategories === 'function') unsubCategories();
+      window.removeEventListener('forge3d_products_updated', handleStockUpdate);
+    };
+  }, []);
+
+  const formatTabLabel = (name) => {
+    if (!name) return '';
+    if (name.includes('Large Format')) return 'Large Format (LFAM)';
+    if (name.includes('High-Temperature')) return 'High-Temp PEEK';
+    if (name.includes('SLS Powder')) return 'SLS Powder Bed';
+    if (name.includes('Resin')) return 'Resin (SLA/DLP)';
+    if (name.includes('Industrial 3D')) return 'Industrial 3D';
+    return name;
+  };
 
   const filterTabs = [
     { id: 'all', label: 'All Featured' },
-    { id: 'industrial-fdm', label: 'Industrial 3D Printers' },
-    { id: 'large-format', label: 'Large Format (LFAM)' },
-    { id: 'scanners', label: '3D Scanners' },
-    { id: 'materials', label: 'Materials' },
+    ...categoriesList.slice(0, 5).map(c => ({ id: c.id, label: formatTabLabel(c.name) }))
   ];
 
-  const displayProducts = selectedCategory === 'all'
-    ? products.slice(0, 8)
-    : products.filter(p => p.category === selectedCategory).slice(0, 8);
+  const isProductFeatured = (p) => {
+    if (p.isFeatured === true || p.is_featured === true) return true;
+    if (typeof p.badge === 'string' && p.badge.toLowerCase().includes('featured')) return true;
+    if (Array.isArray(p.badges) && p.badges.some(b => String(b).toLowerCase().includes('featured'))) return true;
+    return false;
+  };
+
+  // Filter exclusively for featured products
+  const featuredOnly = featuredProducts.filter(isProductFeatured);
+  const activeProductsPool = featuredOnly.length > 0 ? featuredOnly : featuredProducts;
+
+  let displayProducts = [];
+  if (selectedCategory === 'all') {
+    displayProducts = activeProductsPool.slice(0, 8);
+  } else {
+    const inCategory = activeProductsPool.filter(p => p.categoryId === selectedCategory || p.category === selectedCategory);
+    displayProducts = inCategory.length > 0 
+      ? inCategory.slice(0, 8) 
+      : featuredProducts.filter(p => p.categoryId === selectedCategory || p.category === selectedCategory).slice(0, 8);
+  }
 
   return (
     <section className="py-16 sm:py-20 bg-surface-50 border-b border-surface-200 text-left">
@@ -48,16 +118,16 @@ export default function FeaturedProducts({
           </button>
         </div>
 
-        {/* Clean Filter Tabs */}
-        <div className="flex items-center gap-2.5 overflow-x-auto pb-2 mb-8 text-xs no-scrollbar">
+        {/* Clean, Compact Filter Tabs - Wraps cleanly on mobile */}
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-8">
           {filterTabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setSelectedCategory(tab.id)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all ${
+              className={`px-3 py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold tracking-tight whitespace-nowrap transition-all shrink-0 cursor-pointer ${
                 selectedCategory === tab.id
-                  ? 'bg-surface-900 text-white shadow-subtle'
-                  : 'bg-white text-surface-700 hover:bg-surface-100 border border-surface-200'
+                  ? 'bg-surface-900 text-white shadow-xs'
+                  : 'bg-white text-surface-700 hover:bg-surface-100 border border-surface-200 shadow-2xs'
               }`}
             >
               {tab.label}

@@ -26,7 +26,7 @@ export const testimonials = [
     product: "INTAMSYS FUNMAT PRO 610HT",
     category: "Aerospace",
     title: "Revolutionised our ULTEM 9085 aerospace ducting manufacturing",
-    quote: "Transitioning to the FUNMAT PRO 610HT through FORGE 3D cut our production lead times from 6 weeks to 48 hours. The technical team conducted an on-site installation, dialled in our PEEK and ULTEM parameters, and provided exceptional engineer-to-engineer support. Unmatched in the UK market.",
+    quote: "Transitioning to the FUNMAT PRO 610HT through SOFT 3D cut our production lead times from 6 weeks to 48 hours. The technical team conducted an on-site installation, dialled in our PEEK and ULTEM parameters, and provided exceptional engineer-to-engineer support. Unmatched in the European market.",
     avatar: null
   },
   {
@@ -41,7 +41,7 @@ export const testimonials = [
     product: "Modix BIG-120X LFAM",
     category: "Motorsport",
     title: "Meter-scale carbon fibre tooling at a fraction of autoclave cost",
-    quote: "The Modix BIG-120X has allowed us to print full-scale wind tunnel aerodynamic models and autoclave lay-up mandrels in-house. The machine arrived calibrated and FORGE 3D's direct pellet extruder training was first-class. We recouped the machine cost in under 4 months.",
+    quote: "The Modix BIG-120X has allowed us to print full-scale wind tunnel aerodynamic models and autoclave lay-up mandrels in-house. The machine arrived calibrated and SOFT 3D's direct pellet extruder training was first-class. We recouped the machine cost in under 4 months.",
     avatar: null
   },
   {
@@ -56,7 +56,7 @@ export const testimonials = [
     product: "Shining 3D FreeScan UE Pro",
     category: "Metrology & QC",
     title: "Accuracy of blue laser scanning surpassed our Zeiss CMM expectations",
-    quote: "We use the FreeScan UE Pro daily to inspect aerospace turbine impellers. FORGE 3D provided full UK on-site certification and seamless Geomagic Control X integration. Their team really knows industrial quality control inside out.",
+    quote: "We use the FreeScan UE Pro daily to inspect aerospace turbine impellers. SOFT 3D provided full on-site certification and seamless Geomagic Control X integration. Their team really knows industrial quality control inside out.",
     avatar: null
   },
   {
@@ -86,7 +86,7 @@ export const testimonials = [
     product: "Formlabs Form 4 & BioMed Resins",
     category: "Healthcare",
     title: "Speed and biocompatibility make this essential for patient guides",
-    quote: "The speed increase on the Form 4 is staggering—we print custom sterilizable surgical cutting guides in under 35 minutes. FORGE 3D helped us select compliant materials and provided validation documentation for ISO 13485 audits.",
+    quote: "The speed increase on the Form 4 is staggering—we print custom sterilizable surgical cutting guides in under 35 minutes. SOFT 3D helped us select compliant materials and provided validation documentation for ISO 13485 audits.",
     avatar: null
   },
   {
@@ -101,7 +101,7 @@ export const testimonials = [
     product: "CreatBot D600 Pro 2",
     category: "Defence",
     title: "Unrivalled build volume and industrial reliability for drone frames",
-    quote: "Printing meter-long UAV chassis in high-temp Polycarbonate in one solid piece without bonding seams has changed our design possibilities forever. Exceptional support from the FORGE 3D engineering team whenever we had questions.",
+    quote: "Printing meter-long UAV chassis in high-temp Polycarbonate in one solid piece without bonding seams has changed our design possibilities forever. Exceptional support from the SOFT 3D engineering team whenever we had questions.",
     avatar: null
   }
 ];

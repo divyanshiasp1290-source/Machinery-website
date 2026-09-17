@@ -8,13 +8,13 @@ export default function Hero({ onExploreCatalog, onOpenConsultation, onRequestSa
       {/* 1. Full-Width High-Definition Banner Image - Crisp & Clearly Visible */}
       <div className="absolute inset-0 z-0">
         <img
-          src="/images/hero/hero_industrial_3d.jpg"
-          alt="Industrial Additive Manufacturing Facility"
-          className="w-full h-full object-cover object-center lg:object-[center_25%] brightness-105 contrast-105"
+          src="/images/hero/industrial_robot_3d.jpg"
+          alt="Industrial robotic 3D printing system in a premium manufacturing facility"
+          className="w-full h-full object-cover object-[53%_50%] lg:object-[52%_48%] brightness-105 contrast-110"
         />
-        {/* Halka Smooth Gradient Shade From Left: Provides clear contrast for text while keeping machinery on the right bright & visible */}
-        <div className="absolute inset-0 bg-gradient-to-r from-surface-950/95 via-surface-950/60 to-transparent pointer-events-none" />
-        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-surface-950/80 to-transparent pointer-events-none" />
+        {/* Smooth gradient overlay to maintain text readability while showcasing the machine */}
+        <div className="absolute inset-0 bg-gradient-to-r from-surface-950/95 via-surface-950/70 to-surface-950/20 pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-surface-950 to-transparent pointer-events-none" />
       </div>
 
       {/* 2. Hero Content Container */}
@@ -24,7 +24,7 @@ export default function Hero({ onExploreCatalog, onOpenConsultation, onRequestSa
           {/* Technology Partner Badge */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-surface-950/80 border border-brand-400/40 text-xs sm:text-sm font-semibold text-brand-300 backdrop-blur-md shadow-sm">
             <span className="w-2 h-2 rounded-full bg-brand-400 animate-pulse" />
-            <span>Official UK Additive Technology Partner</span>
+            <span>Official Additive Technology Partner</span>
           </div>
 
           {/* Headline */}
@@ -40,7 +40,7 @@ export default function Hero({ onExploreCatalog, onOpenConsultation, onRequestSa
             className="text-surface-100 text-base sm:text-lg lg:text-xl font-normal leading-relaxed max-w-lg"
             style={{ textShadow: '0 1px 10px rgba(0, 0, 0, 0.8)' }}
           >
-            UK distributor of industrial 3D printers, meter-scale LFAM equipment, metrology scanners, and certified engineering materials.
+            Premier distributor of industrial 3D printers, large-format LFAM systems, metrology 3D scanners, and advanced engineering materials.
           </p>
 
           {/* Primary & Secondary CTAs */}
@@ -65,7 +65,7 @@ export default function Hero({ onExploreCatalog, onOpenConsultation, onRequestSa
           <div className="pt-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-surface-200 font-medium drop-shadow-xs">
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-brand-400" />
-              <span>Next-Day UK Dispatch</span>
+              <span>Fast European Dispatch</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-brand-400" />

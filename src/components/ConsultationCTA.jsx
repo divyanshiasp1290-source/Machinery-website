@@ -1,5 +1,5 @@
 import React from 'react';
-import { Phone, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export default function ConsultationCTA({ onOpenConsultation }) {
   return (
@@ -9,7 +9,7 @@ export default function ConsultationCTA({ onOpenConsultation }) {
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 relative z-10">
         <span className="text-xs font-bold uppercase tracking-widest text-brand-400 block mb-2">
-          UK TECHNICAL CONSULTATION
+          TECHNICAL CONSULTATION &amp; AUDIT
         </span>
         
         <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white mb-4">
@@ -29,13 +29,6 @@ export default function ConsultationCTA({ onOpenConsultation }) {
             <ArrowRight className="w-4 h-4" />
           </button>
 
-          <a
-            href="tel:+441215553820"
-            className="w-full sm:w-auto px-8 py-4 bg-surface-800 hover:bg-surface-700 text-white font-semibold text-sm sm:text-base uppercase tracking-wider rounded-xl border border-surface-700 transition-colors flex items-center justify-center gap-2"
-          >
-            <Phone className="w-4 h-4 text-brand-400" />
-            <span>+44 (0) 121 555 3820</span>
-          </a>
         </div>
       </div>
     </section>

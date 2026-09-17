@@ -1,6 +1,7 @@
 export const products = [
   {
     id: 'raise3d-pro3-plus',
+    stockQuantity: 12,
     name: 'Raise3D Pro3 Plus Dual-Extrusion Industrial 3D Printer',
     brand: 'Raise3D',
     category: 'industrial-fdm',
@@ -13,6 +14,8 @@ export const products = [
     inStock: true,
     leadTime: '1-2 Days (UK Mainland)',
     sku: 'R3D-PRO3P-001',
+    badge: 'Featured, Best Seller',
+    isFeatured: true,
     rating: 4.9,
     reviewsCount: 28,
     images: [
@@ -61,10 +64,13 @@ export const products = [
     price: 34950.00,
     quoteOnly: false,
     currency: '£',
-    availability: 'Built to Order / Demonstration Available',
-    inStock: false,
+    availability: 'In Stock UK - Dispatched within 24h',
+    inStock: true,
+    stockQuantity: 8,
     leadTime: '3-4 Weeks (Custom Commissioning)',
     sku: 'INT-FMP610-HT',
+    badge: 'Featured, High Temp',
+    isFeatured: true,
     rating: 5.0,
     reviewsCount: 14,
     images: [
@@ -102,6 +108,7 @@ export const products = [
   },
   {
     id: 'modix-big-120z',
+    stockQuantity: 6,
     name: 'Modix BIG-120Z Large-Scale Meter-Height Industrial 3D Printer',
     brand: 'Modix',
     category: 'large-format',
@@ -114,6 +121,8 @@ export const products = [
     inStock: true,
     leadTime: '3-5 Business Days',
     sku: 'MDX-BIG-120Z',
+    badge: 'Featured, New Arrival',
+    isFeatured: true,
     rating: 4.8,
     reviewsCount: 19,
     images: [
@@ -149,6 +158,7 @@ export const products = [
   },
   {
     id: 'formlabs-fuse-1-plus-30w',
+    stockQuantity: 5,
     name: 'Formlabs Fuse 1+ 30W Industrial SLS 3D Printing System',
     brand: 'Formlabs',
     category: 'sls-powder',
@@ -161,6 +171,8 @@ export const products = [
     inStock: true,
     leadTime: '5-7 Days Delivery & Onsite Commissioning',
     sku: 'FL-FUSE1P-30W',
+    badge: 'Featured, Industrial Grade',
+    isFeatured: true,
     rating: 5.0,
     reviewsCount: 31,
     images: [
@@ -196,6 +208,7 @@ export const products = [
   },
   {
     id: 'formlabs-form-4b',
+    stockQuantity: 14,
     name: 'Formlabs Form 4B High-Speed Precision Photopolymer 3D Printer',
     brand: 'Formlabs',
     category: 'resin-sla',
@@ -208,6 +221,8 @@ export const products = [
     inStock: true,
     leadTime: 'Next Day UK Dispatch',
     sku: 'FL-FORM4B-SYS',
+    badge: 'Featured, Top Rated',
+    isFeatured: true,
     rating: 4.9,
     reviewsCount: 42,
     images: [
@@ -241,6 +256,7 @@ export const products = [
   },
   {
     id: 'freescan-combo-scanner',
+    stockQuantity: 7,
     name: 'FreeScan Combo Metrology-Grade Hybrid Dual-Laser 3D Scanner',
     brand: 'Shining 3D',
     category: 'scanners',
@@ -253,6 +269,8 @@ export const products = [
     inStock: true,
     leadTime: '3-5 Days with Training Included',
     sku: 'SH3D-FSC-MET01',
+    badge: 'Featured',
+    isFeatured: true,
     rating: 5.0,
     reviewsCount: 16,
     images: [
@@ -287,6 +305,7 @@ export const products = [
   },
   {
     id: 'creatbot-d600-pro-2',
+    stockQuantity: 9,
     name: 'CreatBot D600 Pro 2 Large-Volume Dual Extruder 3D Printer',
     brand: 'CreatBot',
     category: 'large-format',
@@ -333,6 +352,7 @@ export const products = [
   },
   {
     id: 'basf-ultrafuse-316l',
+    stockQuantity: 45,
     name: 'BASF Ultrafuse 316L Metal 3D Printing Filament (3.0kg Spool)',
     brand: 'BASF Forward AM',
     category: 'materials',
@@ -378,6 +398,7 @@ export const products = [
   },
   {
     id: 'polymaker-polymide-pa6-cf',
+    stockQuantity: 60,
     name: 'Polymaker PolyMide PA6-CF Carbon Fiber Filament (2.0kg)',
     brand: 'Polymaker',
     category: 'materials',
@@ -423,6 +444,7 @@ export const products = [
   },
   {
     id: 'drywise-inline-dryer',
+    stockQuantity: 18,
     name: 'Drywise Inline Active Filament Drying System for Industrial FDM',
     brand: 'Drywise',
     category: 'accessories',
@@ -466,6 +488,7 @@ export const products = [
   },
   {
     id: 'einscan-pro-hd',
+    stockQuantity: 11,
     name: 'EinScan Pro HD Multi-Functional Handheld 3D Scanner Package',
     brand: 'Shining 3D',
     category: 'scanners',
@@ -510,6 +533,7 @@ export const products = [
   },
   {
     id: 'intamsys-peek-cf',
+    stockQuantity: 30,
     name: 'INTAMSYS ULTRAX Carbon-PEEK Aerospace Polymer Filament (1kg)',
     brand: 'INTAMSYS',
     category: 'materials',

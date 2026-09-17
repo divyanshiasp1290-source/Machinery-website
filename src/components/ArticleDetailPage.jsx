@@ -8,13 +8,13 @@ import {
   ArrowRight,
   Send,
   CheckCircle2,
-  Phone,
   Mail,
   Layers,
   ShieldCheck,
   FileCheck2
 } from 'lucide-react';
-import { blogs } from '../data/blogs';
+import { api } from '../services/api';
+import { blogs as fallbackBlogs } from '../data/blogs';
 
 export default function ArticleDetailPage({ 
   article, 
@@ -22,11 +22,23 @@ export default function ArticleDetailPage({
   onNavigate, 
   onSelectArticle
 }) {
+  const [allArticles, setAllArticles] = React.useState(() => fallbackBlogs);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    api.blogs.list().then(res => {
+      if (isMounted && res?.blogs && res.blogs.length > 0) {
+        setAllArticles(res.blogs);
+      }
+    }).catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
+
   if (!article) return null;
 
   // Filter 3 related articles excluding current article
-  const relatedArticles = blogs
-    .filter(b => b.id !== article.id)
+  const relatedArticles = allArticles
+    .filter(b => b.id !== article.id && b.slug !== article.slug)
     .sort((a, b) => (a.category === article.category ? -1 : 1))
     .slice(0, 3);
 
@@ -341,20 +353,13 @@ export default function ArticleDetailPage({
                 Have specific design requirements or material qualification questions? Talk directly with our team.
               </p>
               <div className="space-y-2.5 text-xs">
-                <a 
-                  href="tel:+441215553820" 
-                  className="flex items-center gap-2.5 text-surface-700 hover:text-brand-600 font-semibold transition-colors p-2 rounded-lg bg-surface-50 hover:bg-brand-50/50"
+                <button 
+                  onClick={() => onNavigate && onNavigate('contact')} 
+                  className="w-full flex items-center justify-center gap-2 text-white bg-brand-500 hover:bg-brand-600 font-bold transition-colors p-2.5 rounded-lg shadow-xs cursor-pointer"
                 >
-                  <Phone className="w-4 h-4 text-brand-500 shrink-0" />
-                  <span>+44 (0) 121 555 3820</span>
-                </a>
-                <a 
-                  href="mailto:engineering@forge3d.co.uk" 
-                  className="flex items-center gap-2.5 text-surface-700 hover:text-brand-600 font-semibold transition-colors p-2 rounded-lg bg-surface-50 hover:bg-brand-50/50"
-                >
-                  <Mail className="w-4 h-4 text-brand-500 shrink-0" />
-                  <span>engineering@forge3d.co.uk</span>
-                </a>
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Send Technical Inquiry</span>
+                </button>
               </div>
             </div>
 

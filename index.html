@@ -4,8 +4,93 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f97316'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FORGE 3D | Industrial 3D Printers & Additive Solutions UK</title>
-    <meta name="description" content="Official UK distributor of industrial 3D printing equipment, large-format LFAM pellet systems, metrology 3D scanners, and advanced polymer materials." />
+    <!-- Runtime safety guard for browser DevTools soft navigation instrumentation (Chromium #543499029) -->
+    <script>
+      (function() {
+        // 1. Guard global error events from DevTools injected VM scripts
+        window.addEventListener('error', function(event) {
+          var msg = event && (event.message || (event.error && event.error.message)) || '';
+          var stack = (event && event.error && event.error.stack) || '';
+          if (
+            msg.indexOf("reading 'startTime'") !== -1 ||
+            (msg.indexOf("startTime") !== -1 && (stack.indexOf('reportAllChanges') !== -1 || (event.filename && event.filename.indexOf('VM') !== -1))) ||
+            stack.indexOf('reportAllChanges') !== -1 ||
+            stack.indexOf('devToolsReportSoftNavs') !== -1
+          ) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return true;
+          }
+        }, true);
+
+        // 2. Guard window.onerror to suppress unhandled DevTools console exceptions
+        var prevOnError = window.onerror;
+        window.onerror = function(msg, url, line, col, err) {
+          var errorStr = String(msg || '') + ' ' + (err && err.stack ? err.stack : '');
+          if (
+            errorStr.indexOf("reading 'startTime'") !== -1 ||
+            errorStr.indexOf('reportAllChanges') !== -1 ||
+            errorStr.indexOf('devToolsReportSoftNavs') !== -1
+          ) {
+            return true;
+          }
+          if (typeof prevOnError === 'function') {
+            return prevOnError.apply(this, arguments);
+          }
+          return false;
+        };
+
+        // 3. Guard requestIdleCallback where devToolsReportSoftNavs runs (n.timeout -> reportAllChanges)
+        if (typeof window.requestIdleCallback === 'function') {
+          var origRequestIdleCallback = window.requestIdleCallback;
+          window.requestIdleCallback = function(callback, options) {
+            return origRequestIdleCallback.call(window, function(deadline) {
+              try {
+                return callback(deadline);
+              } catch (err) {
+                var errStr = String((err && err.message) || '') + ' ' + ((err && err.stack) || '');
+                if (
+                  errStr.indexOf("reading 'startTime'") !== -1 ||
+                  errStr.indexOf('reportAllChanges') !== -1 ||
+                  errStr.indexOf('devToolsReportSoftNavs') !== -1
+                ) {
+                  return;
+                }
+                throw err;
+              }
+            }, options);
+          };
+        }
+
+        // 4. Guard PerformanceObserver from unguarded empty entries
+        if (typeof window.PerformanceObserver === 'function') {
+          var OrigPO = window.PerformanceObserver;
+          var SafePO = function(cb) {
+            var wrapped = function(entryList, obs) {
+              try {
+                return cb(entryList, obs);
+              } catch (err) {
+                var errStr = String((err && err.message) || '') + ' ' + ((err && err.stack) || '');
+                if (
+                  errStr.indexOf("reading 'startTime'") !== -1 ||
+                  errStr.indexOf('reportAllChanges') !== -1 ||
+                  errStr.indexOf('devToolsReportSoftNavs') !== -1
+                ) {
+                  return;
+                }
+                throw err;
+              }
+            };
+            return new OrigPO(wrapped);
+          };
+          SafePO.prototype = OrigPO.prototype;
+          SafePO.supportedEntryTypes = OrigPO.supportedEntryTypes;
+          window.PerformanceObserver = SafePO;
+        }
+      })();
+    </script>
+    <title>SOFT 3D | Industrial 3D Printers & Additive Solutions</title>
+    <meta name="description" content="SOFT 3D Spółka z o.o. - Premier distributor of industrial 3D printers, large-format LFAM systems, metrology 3D scanners, and engineering materials." />
     <!-- Google Fonts: Inter & Space Grotesk -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

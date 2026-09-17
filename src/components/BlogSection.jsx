@@ -1,9 +1,33 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowRight } from 'lucide-react';
-import { blogs } from '../data/blogs';
+import { api } from '../services/api';
+import { blogs as fallbackBlogs } from '../data/blogs';
 
 export default function BlogSection({ onNavigate, onSelectArticle }) {
-  const featuredArticles = blogs.slice(0, 3);
+  const [articles, setArticles] = useState(() => fallbackBlogs.slice(0, 3));
+
+  const loadBlogs = async () => {
+    try {
+      const res = await api.blogs.list();
+      if (res?.blogs && res.blogs.length > 0) {
+        setArticles(res.blogs.slice(0, 3));
+      }
+    } catch (err) {
+      console.warn('Could not load blogs from Supabase:', err);
+    }
+  };
+
+  useEffect(() => {
+    loadBlogs();
+    const unsub = api.realtime.subscribeBlogs(() => {
+      loadBlogs();
+    });
+    return () => {
+      if (typeof unsub === 'function') unsub();
+    };
+  }, []);
+
+  const featuredArticles = articles.slice(0, 3);
 
   return (
     <section className="py-20 bg-white border-b border-surface-200 text-left">

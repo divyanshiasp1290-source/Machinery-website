@@ -12,8 +12,13 @@ import {
   Calendar
 } from 'lucide-react';
 
+import { api } from '../services/api';
+import { businessHoursConfig, getFormattedBusinessHours } from '../config/businessHours';
+
 export default function ContactPage({ onNavigate }) {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -22,19 +27,35 @@ export default function ContactPage({ onNavigate }) {
     message: ''
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        company: '',
-        message: ''
+    setSubmitting(true);
+    setErrorMsg(null);
+    try {
+      await api.enquiries.submit({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        company: formData.company,
+        message: formData.message,
+        type: 'general'
       });
-    }, 3000);
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          company: '',
+          message: ''
+        });
+      }, 4000);
+    } catch (err) {
+      setErrorMsg(err.message || 'Failed to submit inquiry. Please check your details.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -73,7 +94,7 @@ export default function ContactPage({ onNavigate }) {
               Send an Engineering Inquiry
             </h2>
             <p className="text-xs text-surface-500 mb-6">
-              Our UK applications engineers respond within 24 business hours.
+              Our applications engineers respond within 24 business hours.
             </p>
 
             {submitted ? (
@@ -85,7 +106,7 @@ export default function ContactPage({ onNavigate }) {
                   Inquiry Received!
                 </h3>
                 <p className="text-xs text-emerald-700 max-w-sm mx-auto">
-                  Thank you for contacting FORGE 3D. A technical specialist has been assigned to your request and will contact you promptly.
+                  Thank you for contacting SOFT 3D. A technical specialist has been assigned to your request and will contact you promptly.
                 </p>
               </div>
             ) : (
@@ -151,12 +172,19 @@ export default function ContactPage({ onNavigate }) {
                   />
                 </div>
 
+                {errorMsg && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded text-xs text-red-700 font-medium">
+                    {errorMsg}
+                  </div>
+                )}
+
                 <button
                   type="submit"
-                  className="w-full sm:w-auto px-8 py-3 bg-surface-900 hover:bg-brand-500 text-white rounded font-bold uppercase tracking-wider text-xs transition-colors shadow-xs flex items-center justify-center gap-2"
+                  disabled={submitting}
+                  className="w-full sm:w-auto px-8 py-3 bg-surface-900 hover:bg-brand-500 text-white rounded font-bold uppercase tracking-wider text-xs transition-colors shadow-xs flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   <Send className="w-3.5 h-3.5" />
-                  <span>Submit Inquiry</span>
+                  <span>{submitting ? 'Submitting...' : 'Submit Inquiry'}</span>
                 </button>
               </form>
             )}
@@ -168,33 +196,18 @@ export default function ContactPage({ onNavigate }) {
             {/* Quick Contact Info */}
             <div className="bg-white border border-surface-200 rounded-xl p-6 shadow-xs space-y-4 text-xs">
               <h3 className="font-bold text-sm text-surface-900 uppercase tracking-wider">
-                Direct UK Contact Channels
+                Direct Contact Channels
               </h3>
 
               <div className="space-y-3 pt-2">
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded bg-brand-50 flex items-center justify-center text-brand-600 flex-shrink-0">
-                    <Phone className="w-4 h-4" />
+                    <Send className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="font-bold text-surface-900 block">Telephone Hotline</span>
-                    <a href="tel:+441234567890" className="text-surface-600 hover:text-brand-600 transition-colors">
-                      +44 (0) 1234 567 890
-                    </a>
-                    <p className="text-[11px] text-surface-400">Direct connection to application engineers</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded bg-brand-50 flex items-center justify-center text-brand-600 flex-shrink-0">
-                    <Mail className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <span className="font-bold text-surface-900 block">Email Inquiries</span>
-                    <a href="mailto:engineering@forge3d.co.uk" className="text-surface-600 hover:text-brand-600 transition-colors">
-                      engineering@forge3d.co.uk
-                    </a>
-                    <p className="text-[11px] text-surface-400">Send CAD files &amp; RFQs anytime</p>
+                    <span className="font-bold text-surface-900 block">Technical RFQ &amp; Inquiries</span>
+                    <span className="text-surface-600">Submit CAD files, project RFQs &amp; machine queries via the online form</span>
+                    <p className="text-[11px] text-surface-400">Response guaranteed within 24 business hours</p>
                   </div>
                 </div>
 
@@ -204,8 +217,10 @@ export default function ContactPage({ onNavigate }) {
                   </div>
                   <div>
                     <span className="font-bold text-surface-900 block">Working Hours</span>
-                    <span className="text-surface-600">Monday – Friday: 08:30 – 17:30 GMT</span>
-                    <p className="text-[11px] text-surface-400">Emergency support available for SLA holders</p>
+                    <span className="text-surface-600">
+                      {businessHoursConfig?.workdays || 'Monday – Friday'}: {getFormattedBusinessHours(businessHoursConfig)}
+                    </span>
+                    <p className="text-[11px] text-surface-400">Emergency technical support for contracted SLA partners</p>
                   </div>
                 </div>
               </div>
@@ -215,19 +230,22 @@ export default function ContactPage({ onNavigate }) {
             <div className="bg-surface-900 text-white rounded-xl p-6 shadow-xs space-y-3 text-xs">
               <div className="flex items-center gap-2 text-brand-500 font-bold uppercase tracking-wider text-[11px]">
                 <Building2 className="w-4 h-4" />
-                <span>UK Demonstration Centre</span>
+                <span>Central European Headquarters</span>
               </div>
               <h4 className="font-display text-base font-bold text-white">
-                West Midlands Technology Centre
+                SOFT 3D Spółka z o.o.
               </h4>
               <p className="text-surface-300 leading-relaxed text-xs">
-                FORGE 3D Systems UK Ltd<br />
-                Unit 4, Advanced Manufacturing Park<br />
-                West Midlands, B45 9AG<br />
-                United Kingdom
+                <strong>Address:</strong><br />
+                ul. Mokotowska 61 lok. 17<br />
+                00-542 Warsaw, Poland
               </p>
-              <div className="pt-3 border-t border-surface-800 text-surface-400 text-[11px]">
-                Showroom visits strictly by appointment. Full PPE provided on site for high-temperature and laser scanning demonstrations.
+              <div className="pt-2 text-surface-400 font-mono text-[11px] space-y-0.5 border-t border-surface-800">
+                <div>KRS: 0000370365</div>
+                <div>NIP: 7010268819 • REGON: 142683598</div>
+              </div>
+              <div className="pt-2 text-surface-400 text-[11px]">
+                Demonstrations and technical consultations available by prior appointment.
               </div>
             </div>
 

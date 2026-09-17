@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, 
   ShoppingCart, 
-  Phone, 
   Mail, 
   Menu, 
   X, 
@@ -14,6 +13,10 @@ import {
   MapPin
 } from 'lucide-react';
 import { products, allBrands } from '../data/products';
+import { categories as defaultCategories } from '../data/categories';
+import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { businessHoursConfig } from '../config/businessHours';
 
 export default function Header({ 
   onNavigate, 
@@ -25,15 +28,59 @@ export default function Header({
   onSelectBrand,
   onSelectProduct,
   onOpenConsultation,
-  onAccountClick
+  onAccountClick,
+  customer,
+  onOpenCustomerAuth
 }) {
+  const { customer: authCustomer } = useAuth();
+  const currentCustomer = customer || authCustomer;
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [headerCategories, setHeaderCategories] = useState(defaultCategories);
+  const [headerBrands, setHeaderBrands] = useState(() => allBrands.map(name => ({ id: name.toLowerCase(), name })));
   const [searchCategory, setSearchCategory] = useState('All');
   const [searchCategoryOpen, setSearchCategoryOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchDropdownOpen, setSearchDropdownOpen] = useState(false);
   const searchContainerRef = useRef(null);
+
+  useEffect(() => {
+    const fetchCats = () => {
+      api.categories.list()
+        .then(cats => {
+          if (Array.isArray(cats) && cats.length > 0) {
+            setHeaderCategories(cats);
+          }
+        })
+        .catch(() => {});
+    };
+    fetchCats();
+
+    const fetchBrands = () => {
+      api.brands.list()
+        .then(brs => {
+          if (Array.isArray(brs) && brs.length > 0) {
+            setHeaderBrands(brs);
+          }
+        })
+        .catch(() => {});
+    };
+    fetchBrands();
+
+    const unsubCats = api.realtime.subscribeCategories(() => {
+      fetchCats();
+    });
+
+    const unsubBrands = api.realtime.subscribeBrands(() => {
+      fetchBrands();
+    });
+
+    return () => {
+      if (typeof unsubCats === 'function') unsubCats();
+      if (typeof unsubBrands === 'function') unsubBrands();
+    };
+  }, []);
 
   // Search results
   const matchingProducts = searchQuery.trim().length > 1
@@ -78,39 +125,34 @@ export default function Header({
       <div className="bg-surface-900 text-surface-300 text-xs py-1.5 sm:py-2 px-3 sm:px-6 lg:px-8 border-b border-surface-800">
         <div className="max-w-page mx-auto flex justify-between items-center gap-2 text-[11px] sm:text-xs">
           <div className="flex items-center space-x-3 sm:space-x-6 min-w-0">
-            <a 
-              href="tel:+441215553820" 
-              className="flex items-center gap-1 hover:text-white transition-colors truncate"
-            >
-              <Phone className="w-3 h-3 text-brand-500 shrink-0" />
-              <span className="truncate">+44 (0) 121 555 3820</span>
-            </a>
-            <a 
-              href="mailto:engineering@forge3d.co.uk" 
-              className="flex items-center gap-1.5 hover:text-white transition-colors hidden md:flex"
-            >
-              <Mail className="w-3.5 h-3.5 text-brand-500 shrink-0" />
-              <span>engineering@forge3d.co.uk</span>
-            </a>
+            <span className="hidden md:inline-flex items-center gap-1.5 text-surface-300 font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span>SOFT 3D Spółka z o.o. • Authorized 3D Systems Distributor</span>
+            </span>
           </div>
 
           <div className="flex items-center gap-3 sm:gap-4 text-surface-300 shrink-0 text-[11px] sm:text-xs">
             <div className="flex items-center gap-1.5">
               <Clock className="w-3 h-3 text-brand-500 shrink-0" />
-              <span><span className="hidden xs:inline">Mon - Fri: </span>8:30 - 17:30</span>
+              <span>
+                <span className="hidden xs:inline">{businessHoursConfig?.days ? `${businessHoursConfig.days}: ` : 'Mon - Fri: '}</span>
+                {businessHoursConfig?.startTime && businessHoursConfig?.endTime 
+                  ? `${businessHoursConfig.startTime.replace(/^0/, '')} - ${businessHoursConfig.endTime} ${businessHoursConfig?.timezone || 'CET'}`
+                  : '8:30 - 17:30 CET'}
+              </span>
             </div>
             <div className="hidden sm:flex items-center gap-1.5">
               <MapPin className="w-3 h-3 text-brand-500 shrink-0" />
-              <span>UK Tech Hub</span>
+              <span>Warsaw, Poland</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 2. MAIN HEADER (Original FORGE 3D Logo, Search Bar, Account, Wishlist, Cart) */}
+      {/* 2. MAIN HEADER (Brand Logo, Search Bar, Account, Wishlist, Cart) */}
       <div className="max-w-page mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-3 sm:gap-8">
         
-        {/* Left: Mobile hamburger & Original FORGE 3D Logo */}
+        {/* Left: Mobile hamburger & SOFT 3D Logo */}
         <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -120,7 +162,7 @@ export default function Header({
             {mobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
           </button>
 
-          {/* Original Brand Logo: FORGE 3D */}
+          {/* Brand Logo: SOFT 3D */}
           <button 
             onClick={() => onNavigate('home')} 
             className="flex items-center gap-2 sm:gap-3 text-left focus:outline-none shrink-0 group"
@@ -131,11 +173,11 @@ export default function Header({
             <div>
               <div className="flex items-baseline gap-1">
                 <span className="font-display text-lg sm:text-2xl font-black tracking-tight text-surface-900 group-hover:text-brand-600 transition-colors">
-                  FORGE<span className="text-brand-500 font-extrabold">3D</span>
+                  SOFT <span className="text-brand-500 font-extrabold">3D</span>
                 </span>
               </div>
               <p className="hidden sm:block text-[10px] text-surface-500 font-semibold tracking-wider uppercase -mt-0.5">
-                Additive Systems UK
+                Spółka z o.o.
               </p>
             </div>
           </button>
@@ -159,18 +201,28 @@ export default function Header({
               </button>
 
               {searchCategoryOpen && (
-                <div className="absolute top-full left-0 mt-1.5 w-44 bg-white border border-surface-200 rounded-xl shadow-card-hover z-50 py-1 text-xs font-medium text-surface-700 text-left">
-                  {['All', '3D Printers', '3D Scanners', 'Materials', 'Services'].map((cat) => (
+                <div className="absolute top-full left-0 mt-1.5 w-52 bg-white border border-surface-200 rounded-xl shadow-card-hover z-50 py-1 text-xs font-medium text-surface-700 text-left max-h-64 overflow-y-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchCategory('All');
+                      setSearchCategoryOpen(false);
+                    }}
+                    className="w-full text-left px-3.5 py-2 hover:bg-surface-50 hover:text-brand-600 transition-colors font-bold border-b border-surface-100"
+                  >
+                    All Categories
+                  </button>
+                  {headerCategories.map((cat) => (
                     <button
-                      key={cat}
+                      key={cat.id}
                       type="button"
                       onClick={() => {
-                        setSearchCategory(cat);
+                        setSearchCategory(cat.name);
                         setSearchCategoryOpen(false);
                       }}
                       className="w-full text-left px-3.5 py-2 hover:bg-surface-50 hover:text-brand-600 transition-colors"
                     >
-                      {cat}
+                      {cat.name}
                     </button>
                   ))}
                 </div>
@@ -254,13 +306,37 @@ export default function Header({
         {/* Right: Account, Wishlist, Cart Actions */}
         <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           
-          {/* Account Icon */}
+          {/* Account Button / Pill */}
           <button
-            onClick={() => onNavigate('account')}
-            className="p-2 text-surface-600 hover:text-surface-900 hover:bg-surface-100 rounded-lg transition-colors hidden sm:flex items-center justify-center cursor-pointer"
-            title="Customer Portal"
+            onClick={() => {
+              if (currentCustomer) {
+                onNavigate('account');
+              } else if (onAccountClick) {
+                onAccountClick();
+              } else if (onOpenCustomerAuth) {
+                onOpenCustomerAuth();
+              } else {
+                onNavigate('account');
+              }
+            }}
+            className="px-2.5 py-1.5 text-surface-700 hover:text-surface-900 hover:bg-surface-100 rounded-lg transition-colors hidden sm:flex items-center gap-1.5 cursor-pointer text-xs font-bold"
+            title={currentCustomer ? `Signed in as ${currentCustomer.firstName || currentCustomer.email}` : "Customer Sign In"}
           >
-            <User className="w-5 h-5" />
+            {currentCustomer ? (
+              <div className="flex items-center gap-1.5">
+                <div className="w-5 h-5 rounded-full bg-brand-500 text-white flex items-center justify-center font-black text-[10px]">
+                  {(currentCustomer.firstName?.[0] || currentCustomer.email?.[0] || 'U').toUpperCase()}
+                </div>
+                <span className="max-w-[110px] truncate text-surface-900 font-bold">
+                  {currentCustomer.firstName || 'My Account'}
+                </span>
+              </div>
+            ) : (
+              <>
+                <User className="w-4 h-4 text-brand-600" />
+                <span>Sign In</span>
+              </>
+            )}
           </button>
 
           {/* Wishlist */}
@@ -317,55 +393,27 @@ export default function Header({
               </button>
 
               {openDropdown === 'shop' && (
-                <div className="absolute top-full left-0 w-64 bg-white border border-surface-200 shadow-card-hover rounded-b-xl p-2.5 z-50 text-left animate-fade-in font-normal normal-case text-xs">
+                <div className="absolute top-full left-0 w-72 bg-white border border-surface-200 shadow-card-hover rounded-b-xl p-2.5 z-50 text-left animate-fade-in font-normal normal-case text-xs max-h-96 overflow-y-auto">
                   <button
                     onClick={() => { setOpenDropdown(null); onNavigate('catalog'); }}
                     className="w-full text-left p-2 rounded-lg hover:bg-surface-50 text-brand-600 font-bold border-b border-surface-100 mb-1"
                   >
                     View All Products →
                   </button>
-                  <button
-                    onClick={() => { setOpenDropdown(null); onSelectCategory('industrial-fdm'); }}
-                    className="w-full text-left p-2 rounded-lg hover:bg-surface-50 text-surface-800 hover:text-brand-600 font-medium"
-                  >
-                    Industrial 3D Printers
-                  </button>
-                  <button
-                    onClick={() => { setOpenDropdown(null); onSelectCategory('large-format'); }}
-                    className="w-full text-left p-2 rounded-lg hover:bg-surface-50 text-surface-800 hover:text-brand-600 font-medium"
-                  >
-                    Large Format (LFAM) &amp; Pellet
-                  </button>
-                  <button
-                    onClick={() => { setOpenDropdown(null); onSelectCategory('high-temp'); }}
-                    className="w-full text-left p-2 rounded-lg hover:bg-surface-50 text-surface-800 hover:text-brand-600 font-medium"
-                  >
-                    High Temp PEEK / ULTEM
-                  </button>
-                  <button
-                    onClick={() => { setOpenDropdown(null); onSelectCategory('sls-powder'); }}
-                    className="w-full text-left p-2 rounded-lg hover:bg-surface-50 text-surface-800 hover:text-brand-600 font-medium"
-                  >
-                    SLS Powder Bed Fusion
-                  </button>
-                  <button
-                    onClick={() => { setOpenDropdown(null); onSelectCategory('resin-sla'); }}
-                    className="w-full text-left p-2 rounded-lg hover:bg-surface-50 text-surface-800 hover:text-brand-600 font-medium"
-                  >
-                    Resin 3D Printers
-                  </button>
-                  <button
-                    onClick={() => { setOpenDropdown(null); onSelectCategory('scanners'); }}
-                    className="w-full text-left p-2 rounded-lg hover:bg-surface-50 text-surface-800 hover:text-brand-600 font-medium"
-                  >
-                    Industrial 3D Scanners
-                  </button>
-                  <button
-                    onClick={() => { setOpenDropdown(null); onSelectCategory('materials'); }}
-                    className="w-full text-left p-2 rounded-lg hover:bg-surface-50 text-surface-800 hover:text-brand-600 font-medium"
-                  >
-                    Filaments &amp; Advanced Polymers
-                  </button>
+                  {headerCategories.map(cat => (
+                    <button
+                      key={cat.id}
+                      onClick={() => { setOpenDropdown(null); onSelectCategory(cat.id); }}
+                      className="w-full text-left p-2 rounded-lg hover:bg-surface-50 text-surface-800 hover:text-brand-600 font-medium flex items-center justify-between"
+                    >
+                      <span>{cat.name}</span>
+                      {cat.badge && (
+                        <span className="text-[9px] px-1.5 py-0.5 bg-brand-50 text-brand-700 font-bold rounded">
+                          {cat.badge}
+                        </span>
+                      )}
+                    </button>
+                  ))}
                 </div>
               )}
             </li>
@@ -392,15 +440,18 @@ export default function Header({
                     Official Brands
                   </div>
                   <div className="grid grid-cols-2 gap-1">
-                    {allBrands.map(b => (
-                      <button
-                        key={b}
-                        onClick={() => { setOpenDropdown(null); onSelectBrand(b); }}
-                        className="w-full text-left p-1.5 rounded hover:bg-surface-50 text-surface-800 hover:text-brand-600 font-medium transition-colors"
-                      >
-                        {b}
-                      </button>
-                    ))}
+                    {headerBrands.map(b => {
+                      const brandName = typeof b === 'string' ? b : (b.name || b.id);
+                      return (
+                        <button
+                          key={brandName}
+                          onClick={() => { setOpenDropdown(null); onSelectBrand(brandName); }}
+                          className="w-full text-left p-1.5 rounded hover:bg-surface-50 text-surface-800 hover:text-brand-600 font-medium transition-colors"
+                        >
+                          {brandName}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -603,10 +654,31 @@ export default function Header({
               )}
             </button>
             <button
-              onClick={() => { setMobileMenuOpen(false); onNavigate('account'); }}
-              className="w-full text-left py-3 min-h-[44px] flex items-center font-bold text-surface-900 hover:text-brand-600"
+              onClick={() => { 
+                setMobileMenuOpen(false); 
+                if (currentCustomer) {
+                  onNavigate('account');
+                } else if (onOpenCustomerAuth) {
+                  onOpenCustomerAuth();
+                } else {
+                  onNavigate('account');
+                }
+              }}
+              className="w-full text-left py-3 min-h-[44px] flex items-center justify-between font-bold text-surface-900 hover:text-brand-600"
             >
-              Customer Portal / My Account
+              <div className="flex items-center gap-2">
+                <User className="w-4 h-4 text-brand-600" />
+                <span>
+                  {currentCustomer 
+                    ? `My Account (${currentCustomer.firstName || currentCustomer.email})` 
+                    : 'Customer Portal / Sign In'}
+                </span>
+              </div>
+              {currentCustomer && (
+                <span className="text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full font-bold border border-emerald-200">
+                  Signed In
+                </span>
+              )}
             </button>
           </div>
         </div>

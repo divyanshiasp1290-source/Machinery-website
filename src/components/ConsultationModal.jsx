@@ -12,10 +12,14 @@ import {
   MessageSquare
 } from 'lucide-react';
 
+import { api } from '../services/api';
+
 export default function ConsultationModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     company: '',
@@ -26,13 +30,32 @@ export default function ConsultationModal({ isOpen, onClose }) {
     notes: ''
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
+    setSubmitting(true);
+    setErrorMsg(null);
+    try {
+      await api.enquiries.submit({
+        name: formData.name,
+        company: formData.company,
+        email: formData.email,
+        phone: formData.phone,
+        serviceType: formData.serviceType,
+        timeframe: formData.timeframe,
+        notes: formData.notes,
+        type: 'consultation'
+      });
+      setSubmitted(true);
+    } catch (err) {
+      setErrorMsg(err.message || 'Failed to submit consultation request.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleReset = () => {
     setSubmitted(false);
+    setErrorMsg(null);
     onClose();
   };
 
@@ -60,7 +83,7 @@ export default function ConsultationModal({ isOpen, onClose }) {
             </h3>
 
             <p className="text-xs text-surface-600 max-w-md mx-auto leading-relaxed">
-              Thank you, <span className="font-bold">{formData.name}</span>. A factory-certified additive manufacturing engineer from FORGE 3D will review your requirements and get in touch within 2 business hours to schedule your audit or demonstration.
+              Thank you, <span className="font-bold">{formData.name}</span>. A factory-certified additive manufacturing engineer from SOFT 3D will review your requirements and get in touch within 2 business hours to schedule your audit or demonstration.
             </p>
 
             <div className="p-4 bg-surface-50 rounded-xl border border-surface-200 text-xs text-surface-600 text-left max-w-sm mx-auto space-y-1.5">
@@ -215,13 +238,20 @@ export default function ConsultationModal({ isOpen, onClose }) {
                 />
               </div>
 
+              {errorMsg && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded text-xs text-red-700 font-medium">
+                  {errorMsg}
+                </div>
+              )}
+
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+                  disabled={submitting}
+                  className="w-full py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   <Send className="w-4 h-4" />
-                  <span>Request Engineering Consultation</span>
+                  <span>{submitting ? 'Submitting Request...' : 'Request Engineering Consultation'}</span>
                 </button>
               </div>
 

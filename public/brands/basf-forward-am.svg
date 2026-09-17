@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" width="240" height="60">
+  <g transform="translate(4, 12)">
+    <rect x="0" y="0" width="68" height="36" rx="4" fill="#004A96" />
+    <text x="34" y="25" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">BASF</text>
+  </g>
+  <text x="82" y="31" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="800" fill="#0F172A">Forward AM</text>
+  <text x="82" y="44" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="700" letter-spacing="1" fill="#64748B">3D PRINTING SOLUTIONS</text>
+</svg>

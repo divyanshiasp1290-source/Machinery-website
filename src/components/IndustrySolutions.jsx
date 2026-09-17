@@ -28,12 +28,12 @@ export default function IndustrySolutions({ onSelectProduct, onOpenConsultation 
             Validated Additive Solutions for Critical Sectors
           </h2>
           <p className="text-sm sm:text-base text-surface-500 mt-2">
-            Explore how UK leaders in aerospace, motorsport, and precision manufacturing replace expensive CNC machining with high-performance 3D printing.
+            Explore how leading manufacturers in aerospace, motorsport, and precision engineering replace expensive CNC machining with high-performance 3D printing.
           </p>
         </div>
 
-        {/* Industry Selector Tabs */}
-        <div className="flex justify-start sm:justify-center gap-2 overflow-x-auto pb-3 mb-10 no-scrollbar">
+        {/* Industry Selector Tabs - Wraps cleanly on mobile */}
+        <div className="flex flex-wrap justify-center gap-2 mb-10">
           {industrySolutions.map(solution => {
             const TabIcon = iconMap[solution.id] || Factory;
             const isActive = solution.id === activeTab;

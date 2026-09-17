@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" width="240" height="60">
+  <g transform="translate(6, 8)">
+    <rect x="0" y="0" width="44" height="44" rx="8" fill="#DC2626" />
+    <path d="M12 10 H25 C29 10 32 13 32 17 C32 20.5 29.5 23.5 26 24 L33 34 H26 L20 24 H18 V34 H12 Z M18 15 V20 H24 C26 20 27 19 27 17.5 C27 16 26 15 24 15 Z" fill="#FFFFFF" />
+  </g>
+  <text x="60" y="39" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="28" font-weight="900" letter-spacing="1" fill="#0F172A">RAISE<tspan fill="#DC2626">3D</tspan></text>
+</svg>

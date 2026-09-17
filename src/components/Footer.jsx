@@ -1,5 +1,5 @@
 import React from 'react';
-import { Phone, Mail, MapPin, Layers } from 'lucide-react';
+import { Mail, MapPin, Layers } from 'lucide-react';
 
 export default function Footer({ 
   onNavigate, 
@@ -18,26 +18,22 @@ export default function Footer({
                 <Layers className="w-4 h-4" />
               </div>
               <span className="font-display text-xl font-black text-white tracking-tight">
-                FORGE<span className="text-brand-500">3D</span>
+                SOFT <span className="text-brand-500">3D</span>
               </span>
             </div>
 
             <p className="text-surface-400 text-xs sm:text-sm leading-relaxed max-w-sm">
-              Official UK distributor of industrial 3D printing equipment, large-format LFAM pellet systems, metrology 3D scanners, and advanced polymer materials.
+              SOFT 3D Spółka z o.o. — Premier distributor of industrial 3D printers, large-format LFAM systems, 3D scanners, and certified engineering materials.
             </p>
 
             <div className="space-y-2 pt-2 text-surface-300 text-xs">
-              <div className="flex items-center gap-2.5">
-                <Phone className="w-4 h-4 text-brand-400 flex-shrink-0" />
-                <a href="tel:+441215553820" className="hover:text-white transition-colors">+44 (0) 121 555 3820</a>
+              <div className="flex items-start gap-2.5 text-surface-300">
+                <MapPin className="w-4 h-4 text-brand-400 flex-shrink-0 mt-0.5" />
+                <span>Address: ul. Mokotowska 61 lok. 17, 00-542 Warsaw, Poland</span>
               </div>
-              <div className="flex items-center gap-2.5">
-                <Mail className="w-4 h-4 text-brand-400 flex-shrink-0" />
-                <a href="mailto:engineering@forge3d.co.uk" className="hover:text-white transition-colors">engineering@forge3d.co.uk</a>
-              </div>
-              <div className="flex items-center gap-2.5 text-surface-400">
-                <MapPin className="w-4 h-4 text-brand-400 flex-shrink-0" />
-                <span>Advanced Manufacturing Park, West Midlands, United Kingdom</span>
+              <div className="text-[11px] text-surface-400 pl-6 space-y-0.5 font-mono">
+                <div>KRS: 0000370365</div>
+                <div>NIP: 7010268819 • REGON: 142683598</div>
               </div>
             </div>
           </div>
@@ -122,11 +118,6 @@ export default function Footer({
             </h4>
             <ul className="space-y-2 text-surface-400 text-xs">
               <li>
-                <button onClick={() => onNavigate('testimonials')} className="hover:text-white transition-colors">
-                  Customer Testimonials
-                </button>
-              </li>
-              <li>
                 <button onClick={() => onNavigate('about')} className="hover:text-white transition-colors">
                   About Us
                 </button>
@@ -149,11 +140,10 @@ export default function Footer({
         {/* Bottom Bar */}
         <div className="mt-14 pt-8 border-t border-surface-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-surface-500 text-[11px] text-center sm:text-left">
           <div>
-            © {new Date().getFullYear()} FORGE 3D Systems UK Ltd. All rights reserved.
+            © {new Date().getFullYear()} SOFT 3D Spółka z o.o. All rights reserved.
           </div>
-          <div className="flex flex-wrap gap-4 sm:gap-6 justify-center sm:justify-end">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6 justify-center sm:justify-end">
             <button onClick={() => onNavigate('about')} className="hover:text-surface-300">About</button>
-            <button onClick={() => onNavigate('testimonials')} className="hover:text-surface-300">Testimonials</button>
             <button onClick={() => onNavigate('blogs')} className="hover:text-surface-300">Case Studies</button>
             <button onClick={() => onNavigate('contact')} className="hover:text-surface-300">Contact</button>
           </div>

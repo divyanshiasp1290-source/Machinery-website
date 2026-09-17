@@ -10,13 +10,17 @@ import {
   ArrowRight,
   Send,
   Sparkles,
+  Loader2,
   X
 } from 'lucide-react';
 import { services } from '../data/services';
+import { api } from '../services/api';
 
 export default function ServicesPage({ onNavigate, onOpenConsultation }) {
   const [activeServiceModal, setActiveServiceModal] = useState(null);
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState(null);
   const [serviceFormData, setServiceFormData] = useState({
     name: '',
     email: '',
@@ -36,20 +40,44 @@ export default function ServicesPage({ onNavigate, onOpenConsultation }) {
     }
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-    setFormSubmitted(true);
-    setTimeout(() => {
-      setFormSubmitted(false);
-      setActiveServiceModal(null);
-      setServiceFormData({
-        name: '',
-        email: '',
-        company: '',
-        phone: '',
-        details: ''
+    setSubmitting(true);
+    setFormError(null);
+
+    try {
+      const serviceTitle = activeServiceModal?.title || '360° Additive Engineering';
+      await api.enquiries.submit({
+        name: serviceFormData.name,
+        company: serviceFormData.company,
+        email: serviceFormData.email,
+        phone: serviceFormData.phone,
+        message: serviceFormData.details 
+          ? `[Service: ${serviceTitle}] ${serviceFormData.details}`
+          : `Service inquiry for: ${serviceTitle}`,
+        serviceType: serviceTitle,
+        type: 'consultation',
+        specs: serviceFormData.details
       });
-    }, 2200);
+
+      setFormSubmitted(true);
+      setTimeout(() => {
+        setFormSubmitted(false);
+        setActiveServiceModal(null);
+        setServiceFormData({
+          name: '',
+          email: '',
+          company: '',
+          phone: '',
+          details: ''
+        });
+      }, 2500);
+    } catch (err) {
+      console.error('Service inquiry submission error:', err);
+      setFormError(err.message || 'Failed to submit service inquiry. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -73,7 +101,7 @@ export default function ServicesPage({ onNavigate, onOpenConsultation }) {
               360° Additive Solutions, AM Audits &amp; Metrology Services
             </h1>
             <p className="text-xs sm:text-sm text-surface-300 leading-relaxed max-w-2xl">
-              We go far beyond equipment boxes. FORGE 3D partners with British manufacturers to audit CAD designs, certify workplace ventilation, develop bespoke material parameters, and provide on-demand batch manufacturing.
+              We go far beyond equipment boxes. SOFT 3D partners with European manufacturers to audit CAD designs, certify workplace ventilation, develop bespoke material parameters, and provide on-demand batch manufacturing.
             </p>
           </div>
           <div className="absolute -right-10 -bottom-10 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -279,11 +307,25 @@ export default function ServicesPage({ onNavigate, onOpenConsultation }) {
                     />
                   </div>
 
+                  {formError && (
+                    <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs">
+                      {formError}
+                    </div>
+                  )}
+
                   <button
                     type="submit"
-                    className="w-full py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded font-bold uppercase tracking-wider text-xs transition-colors shadow-xs"
+                    disabled={submitting}
+                    className="w-full py-2.5 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white rounded font-bold uppercase tracking-wider text-xs transition-colors shadow-xs flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    Submit Engineering Enquiry
+                    {submitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Submitting Enquiry...</span>
+                      </>
+                    ) : (
+                      <span>Submit Engineering Enquiry</span>
+                    )}
                   </button>
                 </form>
               </div>

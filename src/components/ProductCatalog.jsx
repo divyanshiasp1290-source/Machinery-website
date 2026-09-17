@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Search, SlidersHorizontal, X, RotateCcw } from 'lucide-react';
-import { products, allBrands } from '../data/products';
-import { categories } from '../data/categories';
+import { products, allBrands as initialBrands } from '../data/products';
+import { categories as initialCategories } from '../data/categories';
 import ProductCard from './ProductCard';
+import { api } from '../services/api';
 
 export default function ProductCatalog({ 
   initialCategory, 
@@ -13,6 +14,9 @@ export default function ProductCatalog({
   onToggleWishlist,
   wishlistItems = []
 }) {
+  const [catalogProducts, setCatalogProducts] = useState(products);
+  const [categoriesList, setCategoriesList] = useState(initialCategories);
+  const [brandsList, setBrandsList] = useState(initialBrands);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory || 'all');
   const [selectedBrands, setSelectedBrands] = useState(initialBrand ? [initialBrand] : []);
   const [inStockOnly, setInStockOnly] = useState(false);
@@ -20,17 +24,78 @@ export default function ProductCatalog({
   const [sortBy, setSortBy] = useState('featured');
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
+  useEffect(() => {
+    const fetchCatalog = () => {
+      api.products.list({ limit: 100 })
+        .then(res => {
+          if (res.products && res.products.length > 0) {
+            setCatalogProducts(res.products);
+          }
+        })
+        .catch(() => {});
+    };
+
+    const fetchCategories = () => {
+      api.categories.list()
+        .then(cats => {
+          if (Array.isArray(cats) && cats.length > 0) {
+            setCategoriesList(cats);
+          }
+        })
+        .catch(() => {});
+    };
+
+    const fetchBrands = () => {
+      api.brands.list()
+        .then(brs => {
+          if (Array.isArray(brs) && brs.length > 0) {
+            setBrandsList(brs.map(b => b.name || b.id));
+          }
+        })
+        .catch(() => {});
+    };
+
+    fetchCatalog();
+    fetchCategories();
+    fetchBrands();
+
+    // Supabase Realtime live sync
+    const unsubProducts = api.realtime.subscribeProducts(() => {
+      fetchCatalog();
+    });
+
+    const unsubCategories = api.realtime.subscribeCategories(() => {
+      fetchCategories();
+    });
+
+    const unsubBrands = api.realtime.subscribeBrands(() => {
+      fetchBrands();
+    });
+
+    const handleStockUpdate = () => {
+      fetchCatalog();
+    };
+    window.addEventListener('forge3d_products_updated', handleStockUpdate);
+
+    return () => {
+      if (typeof unsubProducts === 'function') unsubProducts();
+      if (typeof unsubCategories === 'function') unsubCategories();
+      if (typeof unsubBrands === 'function') unsubBrands();
+      window.removeEventListener('forge3d_products_updated', handleStockUpdate);
+    };
+  }, []);
+
   // Sync props
   React.useEffect(() => {
-    if (initialCategory) setSelectedCategory(initialCategory);
+    setSelectedCategory(initialCategory || 'all');
   }, [initialCategory]);
 
   React.useEffect(() => {
-    if (initialBrand) setSelectedBrands([initialBrand]);
+    setSelectedBrands(initialBrand ? [initialBrand] : []);
   }, [initialBrand]);
 
   React.useEffect(() => {
-    if (initialSearch !== undefined) setSearchQuery(initialSearch);
+    setSearchQuery(initialSearch || '');
   }, [initialSearch]);
 
   const handleToggleBrand = (brand) => {
@@ -48,9 +113,26 @@ export default function ProductCatalog({
   };
 
   const filteredProducts = useMemo(() => {
-    return products.filter(product => {
-      if (selectedCategory !== 'all' && product.category !== selectedCategory) {
-        return false;
+    return catalogProducts.filter(product => {
+      if (selectedCategory !== 'all') {
+        const catObj = categoriesList.find(c => 
+          c.id === selectedCategory || 
+          c.name?.toLowerCase() === selectedCategory?.toLowerCase() || 
+          c.slug?.toLowerCase() === selectedCategory?.toLowerCase()
+        );
+        const targetValues = [
+          selectedCategory,
+          catObj?.id,
+          catObj?.name,
+          catObj?.slug
+        ].filter(Boolean).map(x => String(x).toLowerCase());
+
+        const prodCat = String(product.category || '').toLowerCase();
+        const prodCatId = String(product.categoryId || '').toLowerCase();
+        const prodCatName = String(product.categoryName || '').toLowerCase();
+
+        const isMatch = targetValues.some(t => t === prodCat || t === prodCatId || t === prodCatName);
+        if (!isMatch) return false;
       }
       if (selectedBrands.length > 0 && !selectedBrands.includes(product.brand)) {
         return false;
@@ -62,7 +144,7 @@ export default function ProductCatalog({
         const match = 
           product.name.toLowerCase().includes(q) ||
           product.brand.toLowerCase().includes(q) ||
-          product.categoryName.toLowerCase().includes(q);
+          (product.categoryName && product.categoryName.toLowerCase().includes(q));
         if (!match) return false;
       }
       return true;
@@ -82,7 +164,7 @@ export default function ProductCatalog({
       }
       return 0;
     });
-  }, [selectedCategory, selectedBrands, inStockOnly, searchQuery, sortBy]);
+  }, [catalogProducts, selectedCategory, selectedBrands, inStockOnly, searchQuery, sortBy]);
 
   const activeFiltersCount = 
     (selectedCategory !== 'all' ? 1 : 0) +
@@ -104,7 +186,11 @@ export default function ProductCatalog({
               <>
                 <span>/</span>
                 <span className="text-brand-600 font-semibold">
-                  {categories.find(c => c.id === selectedCategory)?.name || selectedCategory}
+                  {categoriesList.find(c => 
+                    c.id === selectedCategory || 
+                    c.name?.toLowerCase() === selectedCategory?.toLowerCase() || 
+                    c.slug?.toLowerCase() === selectedCategory?.toLowerCase()
+                  )?.name || selectedCategory}
                 </span>
               </>
             )}
@@ -139,7 +225,13 @@ export default function ProductCatalog({
 
             {selectedCategory !== 'all' && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-surface-100 rounded text-surface-800">
-                <span>{categories.find(c => c.id === selectedCategory)?.name}</span>
+                <span>
+                  {categoriesList.find(c => 
+                    c.id === selectedCategory || 
+                    c.name?.toLowerCase() === selectedCategory?.toLowerCase() || 
+                    c.slug?.toLowerCase() === selectedCategory?.toLowerCase()
+                  )?.name || selectedCategory}
+                </span>
                 <button onClick={() => setSelectedCategory('all')}><X className="w-3 h-3" /></button>
               </span>
             )}
@@ -203,20 +295,30 @@ export default function ProductCatalog({
                   }`}
                 >
                   <span>All Categories</span>
-                  <span className="text-surface-400">({products.length})</span>
+                  <span className="text-surface-400">({catalogProducts.length})</span>
                 </button>
-                {categories.map(c => (
-                  <button
-                    key={c.id}
-                    onClick={() => setSelectedCategory(c.id)}
-                    className={`w-full text-left py-1 px-2 rounded text-xs flex justify-between ${
-                      selectedCategory === c.id ? 'bg-brand-50 font-bold text-brand-700' : 'text-surface-700 hover:bg-surface-50'
-                    }`}
-                  >
-                    <span>{c.name}</span>
-                    <span className="text-surface-400">({c.count})</span>
-                  </button>
-                ))}
+                {categoriesList.map(c => {
+                  const targetValues = [c.id, c.name, c.slug].filter(Boolean).map(x => String(x).toLowerCase());
+                  const count = catalogProducts.filter(p => {
+                    const prodCat = String(p.category || '').toLowerCase();
+                    const prodCatId = String(p.categoryId || '').toLowerCase();
+                    const prodCatName = String(p.categoryName || '').toLowerCase();
+                    return targetValues.some(t => t === prodCat || t === prodCatId || t === prodCatName);
+                  }).length;
+                  const isSelected = selectedCategory === c.id || selectedCategory === c.name || selectedCategory === c.slug;
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => setSelectedCategory(c.id)}
+                      className={`w-full text-left py-1 px-2 rounded text-xs flex justify-between ${
+                        isSelected ? 'bg-brand-50 font-bold text-brand-700' : 'text-surface-700 hover:bg-surface-50'
+                      }`}
+                    >
+                      <span>{c.name}</span>
+                      <span className="text-surface-400">({count || c.count || 0})</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -226,7 +328,7 @@ export default function ProductCatalog({
                 Brands
               </h4>
               <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                {allBrands.map(brand => (
+                {brandsList.map(brand => (
                   <label key={brand} className="flex items-center gap-2 text-xs text-surface-700 cursor-pointer">
                     <input
                       type="checkbox"
@@ -362,15 +464,18 @@ export default function ProductCatalog({
                   >
                     All Categories
                   </button>
-                  {categories.map(c => (
-                    <button
-                      key={c.id}
-                      onClick={() => setSelectedCategory(c.id)}
-                      className={`w-full text-left py-1.5 px-2.5 rounded-lg ${selectedCategory === c.id ? 'bg-brand-50 text-brand-700 font-bold' : 'text-surface-700 hover:bg-surface-50'}`}
-                    >
-                      {c.name}
-                    </button>
-                  ))}
+                  {categoriesList.map(c => {
+                    const isSelected = selectedCategory === c.id || selectedCategory === c.name || selectedCategory === c.slug;
+                    return (
+                      <button
+                        key={c.id}
+                        onClick={() => setSelectedCategory(c.id)}
+                        className={`w-full text-left py-1.5 px-2.5 rounded-lg ${isSelected ? 'bg-brand-50 text-brand-700 font-bold' : 'text-surface-700 hover:bg-surface-50'}`}
+                      >
+                        {c.name}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -378,7 +483,7 @@ export default function ProductCatalog({
               <div className="pt-2 border-t border-surface-100">
                 <h4 className="text-xs font-bold uppercase text-surface-700 tracking-wider mb-2">Brands</h4>
                 <div className="space-y-1.5 text-xs max-h-48 overflow-y-auto pr-1">
-                  {allBrands.map(brand => (
+                  {brandsList.map(brand => (
                     <label key={brand} className="flex items-center gap-2 text-xs text-surface-700 cursor-pointer">
                       <input
                         type="checkbox"

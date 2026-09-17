@@ -1,0 +1,15 @@
+# robots.txt for https://machinery-website.vercel.app
+User-agent: *
+Allow: /
+
+# Disallow private customer account, checkout, and admin routes
+Disallow: /admin
+Disallow: /admin-login
+Disallow: /account
+Disallow: /cart
+Disallow: /checkout
+Disallow: /wishlist
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://machinery-website.vercel.app/sitemap.xml

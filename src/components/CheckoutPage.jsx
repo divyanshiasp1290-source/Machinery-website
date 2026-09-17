@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ChevronRight, 
   ArrowLeft, 
   CheckCircle2, 
   CreditCard, 
   Building, 
-  Lock
+  Lock,
+  Tag,
+  AlertCircle,
+  Sparkles,
+  X
 } from 'lucide-react';
+import { api } from '../services/api';
 
 export default function CheckoutPage({ 
   cartItems, 
@@ -18,6 +23,15 @@ export default function CheckoutPage({
 }) {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderRef, setOrderRef] = useState('');
+  const [orderSubmitting, setOrderSubmitting] = useState(false);
+  const [orderError, setOrderError] = useState(null);
+
+  // Coupon State
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponMsg, setCouponMsg] = useState(null);
+  const [availableCoupons, setAvailableCoupons] = useState([]);
   
   // Clean checkout form state initialized with userProfile autofill
   const [formData, setFormData] = useState({
@@ -53,6 +67,28 @@ export default function CheckoutPage({
     }
   }, [userProfile]);
 
+  // Load active coupons from Supabase & subscribe to realtime changes
+  const loadCoupons = async () => {
+    try {
+      const res = await api.coupons.list();
+      if (res?.coupons) {
+        setAvailableCoupons(res.coupons);
+      }
+    } catch (err) {
+      console.warn('Could not load available coupons:', err);
+    }
+  };
+
+  useEffect(() => {
+    loadCoupons();
+    const unsub = api.realtime.subscribeCoupons(() => {
+      loadCoupons();
+    });
+    return () => {
+      if (typeof unsub === 'function') unsub();
+    };
+  }, []);
+
   const totalItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   // Subtotal calculation
@@ -63,32 +99,117 @@ export default function CheckoutPage({
     return sum;
   }, 0);
 
-  const total = directSubtotal;
-
-  const handlePlaceOrder = (e) => {
-    e.preventDefault();
-    const reference = 'F3D-ORD-' + Math.floor(100000 + Math.random() * 900000);
-    setOrderRef(reference);
-    setOrderPlaced(true);
-
-    if (onOrderPlaced) {
-      cartItems.forEach((item, idx) => {
-        onOrderPlaced({
-          id: idx === 0 ? reference : `${reference}-${idx + 1}`,
-          date: 'Today',
-          status: 'Processing',
-          total: item.price ? `£${(item.price * item.quantity).toLocaleString()}` : 'Custom Order',
-          product: item,
-          productName: item.name,
-          brand: item.brand,
-          image: (item.images && item.images[0]) || item.image,
-          quantity: item.quantity,
-          specs: item.shortSpecs ? Object.values(item.shortSpecs).slice(0, 2).join(' • ') : 'Standard Specification'
-        });
-      });
+  let discountAmount = 0;
+  if (appliedCoupon) {
+    if (appliedCoupon.discountType === 'percentage') {
+      discountAmount = (directSubtotal * appliedCoupon.discountValue) / 100;
+    } else {
+      discountAmount = Math.min(appliedCoupon.discountValue, directSubtotal);
     }
+  }
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const total = Math.max(0, directSubtotal - discountAmount);
+
+  const applyCouponCode = async (codeToApply) => {
+    const trimmed = (codeToApply || '').trim();
+    if (!trimmed) return;
+    setCouponCode(trimmed);
+    setCouponLoading(true);
+    setCouponMsg(null);
+
+    try {
+      const res = await api.coupons.validate(trimmed, directSubtotal);
+      setAppliedCoupon(res);
+      setCouponMsg({ text: res.message, isError: false });
+    } catch (err) {
+      setAppliedCoupon(null);
+      setCouponMsg({ text: err.message || 'Invalid promotional code.', isError: true });
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleApplyCoupon = async (e) => {
+    if (e?.preventDefault) e.preventDefault();
+    await applyCouponCode(couponCode);
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponMsg(null);
+  };
+
+  const handlePlaceOrder = async (e) => {
+    e.preventDefault();
+    setOrderError(null);
+    setOrderSubmitting(true);
+
+    try {
+      const orderPayload = {
+        customerEmail: formData.email,
+        customerName: `${formData.firstName} ${formData.lastName}`.trim(),
+        customerPhone: formData.phone,
+        company: formData.company,
+        shippingAddress: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          company: formData.company,
+          address: formData.address,
+          city: formData.city,
+          postcode: formData.postcode,
+          country: 'United Kingdom'
+        },
+        billingAddress: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          company: formData.company,
+          address: formData.address,
+          city: formData.city,
+          postcode: formData.postcode,
+          country: 'United Kingdom'
+        },
+        cartItems: cartItems.map(item => ({
+          id: item.id,
+          quantity: item.quantity
+        })),
+        couponCode: appliedCoupon ? appliedCoupon.code : null,
+        paymentMethod: formData.paymentMethod,
+        poNumber: formData.poNumber
+      };
+
+      const res = await api.orders.create(orderPayload);
+      const created = res.order;
+
+      setOrderRef(created.id);
+      setOrderPlaced(true);
+
+      if (onClearCart) {
+        onClearCart();
+      }
+
+      if (onOrderPlaced) {
+        onOrderPlaced({
+          id: created.id,
+          date: new Date(created.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+          status: created.status,
+          total: `£${(created.total || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+          items: created.items,
+          product: created.items?.[0],
+          productName: created.items?.[0]?.name,
+          brand: created.items?.[0]?.brand,
+          image: created.items?.[0]?.image,
+          quantity: created.items?.reduce((s, i) => s + i.quantity, 0) || 1,
+          specs: created.items?.[0]?.specs || 'Industrial Additive Hardware'
+        });
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      setOrderError(err.message || 'Failed to place order. Please verify your details.');
+    } finally {
+      setOrderSubmitting(false);
+    }
   };
 
   const handleCompleteAndExit = () => {
@@ -475,9 +596,167 @@ export default function CheckoutPage({
                   ))}
                 </div>
 
+                {/* Promotional Code & Available Coupons */}
+                <div className="pt-3 border-t border-surface-200 space-y-3">
+                  {appliedCoupon ? (
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs font-bold text-emerald-900 flex items-center gap-1.5 flex-wrap">
+                            <span>Code</span>
+                            <span className="font-mono bg-emerald-100/80 px-1.5 py-0.5 rounded text-emerald-800 tracking-wider">
+                              {appliedCoupon.code}
+                            </span>
+                            <span>Applied!</span>
+                          </div>
+                          <div className="text-[11px] text-emerald-700 font-medium">
+                            {appliedCoupon.discountType === 'percentage'
+                              ? `${appliedCoupon.discountValue}% discount applied`
+                              : `£${appliedCoupon.discountValue} discount applied`}
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleRemoveCoupon}
+                        className="px-2 py-1 text-xs font-bold text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1 cursor-pointer shrink-0"
+                        title="Remove coupon"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                        <span>Remove</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Promo / Coupon code"
+                          value={couponCode}
+                          onChange={e => setCouponCode(e.target.value)}
+                          className="flex-1 px-3 py-2 border border-surface-300 rounded-xl text-xs uppercase font-mono focus:outline-none focus:border-brand-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleApplyCoupon}
+                          disabled={couponLoading || !couponCode.trim()}
+                          className="px-3.5 py-2 bg-surface-900 hover:bg-brand-600 text-white font-bold text-xs rounded-xl transition-colors disabled:opacity-50 cursor-pointer"
+                        >
+                          {couponLoading ? '...' : 'Apply'}
+                        </button>
+                      </div>
+                      {couponMsg && (
+                        <div className={`mt-2 text-[11px] font-semibold ${couponMsg.isError ? 'text-red-600' : 'text-emerald-700'}`}>
+                          {couponMsg.text}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Available Coupons List */}
+                  {availableCoupons.length > 0 && (
+                    <div className="bg-surface-50 border border-surface-200 rounded-xl p-3 space-y-2.5">
+                      <div className="flex items-center justify-between text-xs font-bold text-surface-800">
+                        <div className="flex items-center gap-1.5 text-brand-700">
+                          <Tag className="w-3.5 h-3.5 text-brand-600" />
+                          <span>Available Offers &amp; Coupons</span>
+                        </div>
+                        <span className="text-[10px] text-surface-500 font-normal">{availableCoupons.length} active</span>
+                      </div>
+
+                      <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                        {availableCoupons.map((cp) => {
+                          const isEligible = !cp.minOrderAmount || directSubtotal >= cp.minOrderAmount;
+                          const isCurrent = appliedCoupon?.code === cp.code;
+
+                          return (
+                            <div
+                              key={cp.id}
+                              className={`p-2.5 rounded-lg border transition-all text-xs flex items-center justify-between gap-2.5 ${
+                                isCurrent
+                                  ? 'bg-emerald-50 border-emerald-300'
+                                  : isEligible
+                                  ? 'bg-white hover:border-brand-300 border-surface-200 shadow-2xs'
+                                  : 'bg-white/60 border-surface-200 opacity-70'
+                              }`}
+                            >
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-mono font-black text-xs text-brand-600 tracking-wider">
+                                    {cp.code}
+                                  </span>
+                                  <span className="px-1.5 py-0.2 bg-brand-50 text-brand-700 font-bold text-[10px] rounded border border-brand-100">
+                                    {cp.discountType === 'percentage' ? `${cp.discountValue}% OFF` : `Save £${cp.discountValue}`}
+                                  </span>
+                                </div>
+                                <div className="text-[11px] text-surface-500 mt-1">
+                                  {cp.minOrderAmount > 0 ? (
+                                    isEligible ? (
+                                      <span className="text-emerald-700 font-medium">✓ Min. spend £{cp.minOrderAmount.toLocaleString()} met</span>
+                                    ) : (
+                                      <span className="text-amber-700 font-medium">
+                                        Add £{(cp.minOrderAmount - directSubtotal).toFixed(2)} more to unlock
+                                      </span>
+                                    )
+                                  ) : (
+                                    <span>No minimum spend required</span>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="shrink-0">
+                                {isCurrent ? (
+                                  <button
+                                    type="button"
+                                    onClick={handleRemoveCoupon}
+                                    className="px-2.5 py-1 bg-emerald-600 hover:bg-red-600 text-white font-bold text-[10px] rounded-lg transition-colors flex items-center gap-1 cursor-pointer shadow-xs"
+                                    title="Click to remove"
+                                  >
+                                    <CheckCircle2 className="w-3 h-3" />
+                                    <span>Applied</span>
+                                  </button>
+                                ) : isEligible ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => applyCouponCode(cp.code)}
+                                    disabled={couponLoading}
+                                    className="px-3 py-1 bg-surface-900 hover:bg-brand-600 text-white font-bold text-[10px] rounded-lg transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
+                                  >
+                                    Apply
+                                  </button>
+                                ) : (
+                                  <span className="text-[10px] font-semibold text-surface-400 bg-surface-100 border border-surface-200 px-2 py-1 rounded-lg">
+                                    Min £{cp.minOrderAmount}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Breakdown */}
-                <div className="pt-3 border-t border-surface-200 space-y-2.5 text-xs">
-                  <div className="flex justify-between text-lg font-black text-surface-900">
+                <div className="pt-3 border-t border-surface-200 space-y-2 text-xs">
+                  <div className="flex justify-between text-surface-600">
+                    <span>Subtotal:</span>
+                    <span>£{directSubtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                  </div>
+
+                  {appliedCoupon && discountAmount > 0 && (
+                    <div className="flex justify-between text-emerald-700 font-bold">
+                      <span>Discount ({appliedCoupon.code}):</span>
+                      <span>-£{discountAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                    </div>
+                  )}
+
+                  <div className="pt-2 border-t border-surface-200 flex justify-between text-lg font-black text-surface-900">
                     <span>Total:</span>
                     <span className="text-brand-600">
                       £{total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -485,13 +764,21 @@ export default function CheckoutPage({
                   </div>
                 </div>
 
+                {orderError && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-semibold flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                    <span>{orderError}</span>
+                  </div>
+                )}
+
                 {/* Submit Order Button */}
                 <div className="pt-2">
                   <button
                     type="submit"
-                    className="w-full py-4 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                    disabled={orderSubmitting}
+                    className="w-full py-4 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-98 disabled:opacity-50"
                   >
-                    <span>Place Order</span>
+                    <span>{orderSubmitting ? 'Placing Order...' : 'Place Verified Order'}</span>
                   </button>
                 </div>
               </div>
