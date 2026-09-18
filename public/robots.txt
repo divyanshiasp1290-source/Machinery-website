@@ -1,4 +1,4 @@
-# robots.txt for https://machinery-website.vercel.app
+# robots.txt for https://machinery-website-eta.vercel.app
 User-agent: *
 Allow: /
 
@@ -12,4 +12,4 @@ Disallow: /wishlist
 Disallow: /api/
 
 # Sitemap location
-Sitemap: https://machinery-website.vercel.app/sitemap.xml
+Sitemap: https://machinery-website-eta.vercel.app/sitemap.xml
