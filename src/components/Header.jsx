@@ -163,8 +163,9 @@ export default function Header({
           </button>
 
           {/* Brand Logo: SOFT 3D */}
-          <button 
-            onClick={() => onNavigate('home')} 
+          <a 
+            href="/" 
+            onClick={(e) => { e.preventDefault(); onNavigate('home'); }} 
             className="flex items-center gap-2 sm:gap-3 text-left focus:outline-none shrink-0 group"
           >
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-surface-900 flex items-center justify-center text-brand-500 shadow-sm group-hover:bg-brand-600 group-hover:text-white transition-colors shrink-0">
@@ -180,7 +181,7 @@ export default function Header({
                 Spółka z o.o.
               </p>
             </div>
-          </button>
+          </a>
         </div>
 
         {/* Center: Search Bar with "All ⌵" category dropdown */}
@@ -340,8 +341,9 @@ export default function Header({
           </button>
 
           {/* Wishlist */}
-          <button
-            onClick={() => onNavigate('wishlist')}
+          <a
+            href="/wishlist"
+            onClick={(e) => { e.preventDefault(); onNavigate('wishlist'); }}
             className="relative p-2 text-surface-600 hover:text-surface-900 hover:bg-surface-100 rounded-lg transition-colors hidden sm:flex items-center justify-center cursor-pointer"
             title="Wishlist"
           >
@@ -351,11 +353,12 @@ export default function Header({
                 {wishlistCount}
               </span>
             )}
-          </button>
+          </a>
 
           {/* Cart Icon with Counter */}
-          <button
-            onClick={onOpenCart}
+          <a
+            href="/cart"
+            onClick={(e) => { e.preventDefault(); onOpenCart(); }}
             className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-surface-900 hover:bg-brand-600 text-white rounded-lg sm:rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-subtle cursor-pointer shrink-0"
             title="Cart Tray"
           >
@@ -366,7 +369,7 @@ export default function Header({
                 {totalCartCount}
               </span>
             )}
-          </button>
+          </a>
         </div>
 
       </div>
@@ -382,24 +385,26 @@ export default function Header({
               onMouseEnter={() => setOpenDropdown('shop')}
               onMouseLeave={() => setOpenDropdown(null)}
             >
-              <button 
-                onClick={() => onNavigate('catalog')}
+              <a 
+                href="/catalog"
+                onClick={(e) => { e.preventDefault(); onNavigate('catalog'); }}
                 className={`py-3.5 flex items-center gap-1 hover:text-brand-600 transition-colors ${
                   currentPage === 'catalog' ? 'text-brand-600 border-b-2 border-brand-500' : ''
                 }`}
               >
                 <span>Shop</span>
                 <ChevronDown className="w-3.5 h-3.5 text-surface-400" />
-              </button>
+              </a>
 
               {openDropdown === 'shop' && (
                 <div className="absolute top-full left-0 w-72 bg-white border border-surface-200 shadow-card-hover rounded-b-xl p-2.5 z-50 text-left animate-fade-in font-normal normal-case text-xs max-h-96 overflow-y-auto">
-                  <button
-                    onClick={() => { setOpenDropdown(null); onNavigate('catalog'); }}
-                    className="w-full text-left p-2 rounded-lg hover:bg-surface-50 text-brand-600 font-bold border-b border-surface-100 mb-1"
+                  <a
+                    href="/catalog"
+                    onClick={(e) => { e.preventDefault(); setOpenDropdown(null); onNavigate('catalog'); }}
+                    className="block w-full text-left p-2 rounded-lg hover:bg-surface-50 text-brand-600 font-bold border-b border-surface-100 mb-1"
                   >
                     View All Products →
-                  </button>
+                  </a>
                   {headerCategories.map(cat => (
                     <button
                       key={cat.id}
@@ -424,15 +429,16 @@ export default function Header({
               onMouseEnter={() => setOpenDropdown('brands')}
               onMouseLeave={() => setOpenDropdown(null)}
             >
-              <button 
-                onClick={() => onNavigate('brands')}
+              <a 
+                href="/#brands"
+                onClick={(e) => { e.preventDefault(); onNavigate('brands'); }}
                 className={`py-3.5 flex items-center gap-1 hover:text-brand-600 transition-colors ${
                   currentPage === 'brands' ? 'text-brand-600 border-b-2 border-brand-500' : ''
                 }`}
               >
                 <span>Brands</span>
                 <ChevronDown className="w-3.5 h-3.5 text-surface-400" />
-              </button>
+              </a>
 
               {openDropdown === 'brands' && (
                 <div className="absolute top-full left-0 w-60 bg-white border border-surface-200 shadow-card-hover rounded-b-xl p-3 z-50 text-left animate-fade-in font-normal normal-case text-xs">
@@ -463,24 +469,26 @@ export default function Header({
               onMouseEnter={() => setOpenDropdown('services')}
               onMouseLeave={() => setOpenDropdown(null)}
             >
-              <button 
-                onClick={() => onNavigate('services')}
+              <a 
+                href="/services"
+                onClick={(e) => { e.preventDefault(); onNavigate('services'); }}
                 className={`py-3.5 flex items-center gap-1 hover:text-brand-600 transition-colors ${
                   currentPage === 'services' ? 'text-brand-600 border-b-2 border-brand-500' : ''
                 }`}
               >
                 <span>Services</span>
                 <ChevronDown className="w-3.5 h-3.5 text-surface-400" />
-              </button>
+              </a>
 
               {openDropdown === 'services' && (
                 <div className="absolute top-full left-0 w-64 bg-white border border-surface-200 shadow-card-hover rounded-b-xl p-2.5 z-50 text-left animate-fade-in font-normal normal-case text-xs">
-                  <button
-                    onClick={() => { setOpenDropdown(null); onNavigate('services'); }}
-                    className="w-full text-left p-2 rounded-lg hover:bg-surface-50 text-brand-600 font-bold border-b border-surface-100 mb-1"
+                  <a
+                    href="/services"
+                    onClick={(e) => { e.preventDefault(); setOpenDropdown(null); onNavigate('services'); }}
+                    className="block w-full text-left p-2 rounded-lg hover:bg-surface-50 text-brand-600 font-bold border-b border-surface-100 mb-1"
                   >
                     360° Additive Solutions →
-                  </button>
+                  </a>
                   <button
                     onClick={() => { setOpenDropdown(null); onNavigate('services'); }}
                     className="w-full text-left p-2 rounded-lg hover:bg-surface-50 text-surface-800 hover:text-brand-600 font-medium"
@@ -524,44 +532,48 @@ export default function Header({
 
               {openDropdown === 'more' && (
                 <div className="absolute top-full left-0 w-56 bg-white border border-surface-200 shadow-card-hover rounded-b-xl p-2.5 z-50 text-left animate-fade-in font-normal normal-case text-xs">
-                  <button
-                    onClick={() => { setOpenDropdown(null); onNavigate('blogs'); }}
-                    className="w-full text-left p-2 rounded-lg hover:bg-surface-50 text-surface-800 hover:text-brand-600 font-medium"
+                  <a
+                    href="/blogs"
+                    onClick={(e) => { e.preventDefault(); setOpenDropdown(null); onNavigate('blogs'); }}
+                    className="block w-full text-left p-2 rounded-lg hover:bg-surface-50 text-surface-800 hover:text-brand-600 font-medium"
                   >
                     Case Studies &amp; Blog
-                  </button>
-                  <button
-                    onClick={() => { setOpenDropdown(null); onNavigate('about'); }}
-                    className="w-full text-left p-2 rounded-lg hover:bg-surface-50 text-surface-800 hover:text-brand-600 font-medium"
+                  </a>
+                  <a
+                    href="/about"
+                    onClick={(e) => { e.preventDefault(); setOpenDropdown(null); onNavigate('about'); }}
+                    className="block w-full text-left p-2 rounded-lg hover:bg-surface-50 text-surface-800 hover:text-brand-600 font-medium"
                   >
                     About Us
-                  </button>
+                  </a>
                 </div>
               )}
             </li>
 
             {/* 5. Contact Us */}
             <li>
-              <button 
-                onClick={() => onNavigate('contact')}
-                className={`py-3.5 hover:text-brand-600 transition-colors ${
+              <a 
+                href="/contact"
+                onClick={(e) => { e.preventDefault(); onNavigate('contact'); }}
+                className={`py-3.5 block hover:text-brand-600 transition-colors ${
                   currentPage === 'contact' ? 'text-brand-600 border-b-2 border-brand-500' : ''
                 }`}
               >
                 Contact Us
-              </button>
+              </a>
             </li>
 
             {/* 6. Request a Sample */}
             <li>
-              <button 
-                onClick={() => onNavigate('request-sample')}
-                className={`py-3.5 hover:text-brand-600 font-bold transition-colors cursor-pointer ${
+              <a 
+                href="/request-sample"
+                onClick={(e) => { e.preventDefault(); onNavigate('request-sample'); }}
+                className={`py-3.5 block hover:text-brand-600 font-bold transition-colors cursor-pointer ${
                   currentPage === 'request-sample' ? 'text-brand-600 border-b-2 border-brand-500' : 'text-brand-600'
                 }`}
               >
                 Request a Sample
-              </button>
+              </a>
             </li>
 
           </ul>
@@ -589,50 +601,58 @@ export default function Header({
           </form>
 
           <div className="font-bold text-surface-800 divide-y divide-surface-100">
-            <button
-              onClick={() => { setMobileMenuOpen(false); onNavigate('catalog'); }}
+            <a
+              href="/catalog"
+              onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); onNavigate('catalog'); }}
               className="w-full text-left py-3 min-h-[44px] flex items-center hover:text-brand-600"
             >
               Shop All Products
-            </button>
-            <button
-              onClick={() => { setMobileMenuOpen(false); onNavigate('brands'); }}
+            </a>
+            <a
+              href="/#brands"
+              onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); onNavigate('brands'); }}
               className="w-full text-left py-3 min-h-[44px] flex items-center hover:text-brand-600"
             >
               Shop By Brand
-            </button>
-            <button
-              onClick={() => { setMobileMenuOpen(false); onNavigate('services'); }}
+            </a>
+            <a
+              href="/services"
+              onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); onNavigate('services'); }}
               className="w-full text-left py-3 min-h-[44px] flex items-center hover:text-brand-600"
             >
               Services &amp; 360 Solutions
-            </button>
-            <button
-              onClick={() => { setMobileMenuOpen(false); onNavigate('blogs'); }}
+            </a>
+            <a
+              href="/blogs"
+              onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); onNavigate('blogs'); }}
               className="w-full text-left py-3 min-h-[44px] flex items-center hover:text-brand-600"
             >
               Case Studies &amp; Blog
-            </button>
-            <button
-              onClick={() => { setMobileMenuOpen(false); onNavigate('about'); }}
+            </a>
+            <a
+              href="/about"
+              onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); onNavigate('about'); }}
               className="w-full text-left py-3 min-h-[44px] flex items-center hover:text-brand-600"
             >
               About Us
-            </button>
-            <button
-              onClick={() => { setMobileMenuOpen(false); onNavigate('contact'); }}
+            </a>
+            <a
+              href="/contact"
+              onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); onNavigate('contact'); }}
               className="w-full text-left py-3 min-h-[44px] flex items-center hover:text-brand-600"
             >
               Contact Us
-            </button>
-            <button
-              onClick={() => { setMobileMenuOpen(false); onNavigate('request-sample'); }}
+            </a>
+            <a
+              href="/request-sample"
+              onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); onNavigate('request-sample'); }}
               className="w-full text-left py-3 min-h-[44px] flex items-center text-brand-600 font-bold"
             >
               Request a Sample →
-            </button>
-            <button
-              onClick={() => { setMobileMenuOpen(false); onNavigate('cart'); }}
+            </a>
+            <a
+              href="/cart"
+              onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); onNavigate('cart'); }}
               className="w-full text-left py-3 min-h-[44px] flex items-center justify-between font-bold text-surface-900 hover:text-brand-600"
             >
               <span>View Cart / Quotation Tray</span>
@@ -641,9 +661,10 @@ export default function Header({
                   {totalCartCount}
                 </span>
               )}
-            </button>
-            <button
-              onClick={() => { setMobileMenuOpen(false); onNavigate('wishlist'); }}
+            </a>
+            <a
+              href="/wishlist"
+              onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); onNavigate('wishlist'); }}
               className="w-full text-left py-3 min-h-[44px] flex items-center justify-between font-bold text-surface-900 hover:text-brand-600"
             >
               <span>My Saved Wishlist</span>
@@ -652,7 +673,7 @@ export default function Header({
                   {wishlistCount}
                 </span>
               )}
-            </button>
+            </a>
             <button
               onClick={() => { 
                 setMobileMenuOpen(false); 

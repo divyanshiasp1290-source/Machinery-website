@@ -109,13 +109,14 @@ export default function FeaturedProducts({
             </h2>
           </div>
 
-          <button
-            onClick={onViewAllCatalog}
-            className="text-xs sm:text-sm font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1.5 self-start sm:self-auto transition-colors"
+          <a
+            href="/catalog"
+            onClick={(e) => { e.preventDefault(); if (onViewAllCatalog) onViewAllCatalog(); }}
+            className="text-xs sm:text-sm font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1.5 self-start sm:self-auto transition-colors cursor-pointer"
           >
             <span>View Full Catalogue</span>
             <ArrowRight className="w-4 h-4" />
-          </button>
+          </a>
         </div>
 
         {/* Clean, Compact Filter Tabs - Wraps cleanly on mobile */}

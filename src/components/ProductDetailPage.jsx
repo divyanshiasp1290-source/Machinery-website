@@ -205,19 +205,21 @@ export default function ProductDetailPage({
         {/* Breadcrumbs Navigation */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-8 pb-4 border-b border-surface-200/80">
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs text-surface-500">
-            <button 
-              onClick={() => onNavigate('home')} 
+            <a 
+              href="/"
+              onClick={(e) => { e.preventDefault(); onNavigate('home'); }} 
               className="hover:text-brand-600 transition-colors cursor-pointer"
             >
               Home
-            </button>
+            </a>
             <ChevronRight className="w-3.5 h-3.5 text-surface-400" />
-            <button 
-              onClick={() => onNavigate('catalog')} 
+            <a 
+              href="/catalog"
+              onClick={(e) => { e.preventDefault(); onNavigate('catalog'); }} 
               className="hover:text-brand-600 transition-colors cursor-pointer"
             >
               Catalogue
-            </button>
+            </a>
             <ChevronRight className="w-3.5 h-3.5 text-surface-400" />
             <span className="font-semibold text-surface-700">{product.brand}</span>
             <ChevronRight className="w-3.5 h-3.5 text-surface-400" />

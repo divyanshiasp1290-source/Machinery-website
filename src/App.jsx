@@ -33,21 +33,125 @@ import Footer from './components/Footer';
 import { useAuth } from './context/AuthContext';
 import { api } from './services/api';
 import { products } from './data/products';
-import { CheckCircle2, User } from 'lucide-react';
+import { blogs } from './data/blogs';
+import { CheckCircle2, User, ChevronRight } from 'lucide-react';
+
+// Helper to map a page name to a clean URL path
+export const getPathForPage = (page, options = {}) => {
+  switch (page) {
+    case 'home':
+      return '/';
+    case 'catalog': {
+      const params = new URLSearchParams();
+      if (options.category && options.category !== 'all') params.set('category', options.category);
+      if (options.brand) params.set('brand', options.brand);
+      if (options.search) params.set('search', options.search);
+      const qs = params.toString();
+      return qs ? `/catalog?${qs}` : '/catalog';
+    }
+    case 'services':
+      return '/services';
+    case 'blogs':
+      return '/blogs';
+    case 'about':
+      return '/about';
+    case 'testimonials':
+      return '/testimonials';
+    case 'contact':
+      return '/contact';
+    case 'request-sample':
+      return '/request-sample';
+    case 'cart':
+      return '/cart';
+    case 'checkout':
+      return '/checkout';
+    case 'wishlist':
+      return '/wishlist';
+    case 'account':
+      return '/account';
+    case 'admin':
+      return '/admin';
+    case 'admin-login':
+      return '/admin-login';
+    default:
+      return `/${page}`;
+  }
+};
+
+export const parseCurrentRoute = () => {
+  if (typeof window === 'undefined') return { page: 'home' };
+
+  // 1. Support legacy hash URLs (e.g. #/catalog) by migrating to clean pathname
+  let rawHash = window.location.hash || '';
+  if (rawHash.startsWith('#/') || rawHash.startsWith('#')) {
+    const hashClean = rawHash.replace(/^#\/?/, '').split('?')[0];
+    if (hashClean && hashClean !== 'brands') {
+      const targetPath = `/${hashClean}`;
+      window.history.replaceState(null, '', targetPath);
+    }
+  }
+
+  const pathname = window.location.pathname.replace(/\/$/, '') || '/';
+  const searchParams = new URLSearchParams(window.location.search);
+
+  if (pathname === '/' || pathname === '/home') {
+    return { page: 'home' };
+  }
+  if (pathname === '/catalog') {
+    return {
+      page: 'catalog',
+      category: searchParams.get('category') || 'all',
+      brand: searchParams.get('brand') || null,
+      search: searchParams.get('search') || ''
+    };
+  }
+  if (pathname === '/services') return { page: 'services' };
+  if (pathname === '/blogs' || pathname === '/blog') return { page: 'blogs' };
+  if (pathname.startsWith('/blogs/') || pathname.startsWith('/blog/')) {
+    const slug = pathname.replace(/^\/(blogs|blog)\//, '');
+    const foundArticle = blogs.find(b => String(b.slug) === slug || String(b.id) === slug);
+    if (foundArticle) {
+      return { page: 'article-detail', activeArticle: foundArticle };
+    }
+    return { page: 'blogs' };
+  }
+  if (pathname === '/request-sample') return { page: 'request-sample' };
+  if (pathname === '/about' || pathname === '/about-us') return { page: 'about' };
+  if (pathname === '/testimonials') return { page: 'testimonials' };
+  if (pathname === '/contact' || pathname === '/contact-us') return { page: 'contact' };
+  if (pathname.startsWith('/product/')) {
+    const prodId = pathname.replace(/^\/product\//, '');
+    const foundProd = products.find(p => String(p.id) === prodId);
+    if (foundProd) {
+      return { page: 'product-detail', activeProduct: foundProd };
+    }
+    return { page: 'catalog' };
+  }
+  if (pathname === '/cart') return { page: 'cart' };
+  if (pathname === '/checkout') return { page: 'checkout' };
+  if (pathname === '/wishlist') return { page: 'wishlist' };
+  if (pathname === '/account') return { page: 'account' };
+  if (pathname === '/admin' || pathname === '/admin-dashboard') return { page: 'admin' };
+  if (pathname === '/admin-login') return { page: 'admin-login' };
+
+  return { page: 'home' };
+};
 
 export default function App() {
   const { customer, admin, customerLogout, adminLogout } = useAuth();
 
+  const initialRoute = parseCurrentRoute();
+
   // Page view state: 'home' | 'catalog' | 'services' | 'blogs' | 'testimonials' | 'about' | 'contact' | 'product-detail' | 'article-detail' | 'request-sample' | 'cart' | 'checkout' | 'wishlist' | 'account' | 'admin' | 'admin-login'
-  const [currentPage, setCurrentPage] = useState('home');
+  const [currentPage, setCurrentPage] = useState(initialRoute.page);
   const [catalogFilters, setCatalogFilters] = useState({
-    category: 'all',
-    brand: null,
-    search: ''
+    category: initialRoute.category || 'all',
+    brand: initialRoute.brand || null,
+    search: initialRoute.search || ''
   });
 
-  const [activeProduct, setActiveProduct] = useState(null);
-  const [activeArticle, setActiveArticle] = useState(null);
+  const [activeProduct, setActiveProduct] = useState(initialRoute.activeProduct || null);
+  const [activeArticle, setActiveArticle] = useState(initialRoute.activeArticle || null);
   const [isConsultationOpen, setIsConsultationOpen] = useState(false);
   const [isCustomerAuthOpen, setIsCustomerAuthOpen] = useState(false);
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
@@ -202,44 +306,35 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentPage]);
 
-  // URL Hash listener for direct navigation
+  // URL Popstate listener for clean client-side navigation (back/forward and history)
   useEffect(() => {
-    const handleHash = () => {
-      const hash = window.location.hash.replace('#/', '').replace('#', '');
-      if (hash === 'admin' || hash === 'admin-dashboard') {
-        setCurrentPage('admin');
-      } else if (hash === 'admin-login') {
-        setCurrentPage('admin-login');
-      } else if (hash === 'account') {
-        setCurrentPage('account');
-      } else if (hash === 'cart') {
-        setCurrentPage('cart');
-      } else if (hash === 'checkout') {
-        setCurrentPage('checkout');
-      } else if (hash === 'wishlist') {
-        setCurrentPage('wishlist');
-      } else if (hash === 'catalog') {
-        setCurrentPage('catalog');
-      } else if (hash === 'services') {
-        setCurrentPage('services');
-      } else if (hash === 'blogs') {
-        setCurrentPage('blogs');
-      } else if (hash === 'about') {
-        setCurrentPage('about');
-      } else if (hash === 'contact') {
-        setCurrentPage('contact');
-      } else if (hash === 'request-sample') {
-        setCurrentPage('request-sample');
+    const handlePopState = () => {
+      const route = parseCurrentRoute();
+      setCurrentPage(route.page);
+      if (route.page === 'catalog') {
+        setCatalogFilters({
+          category: route.category || 'all',
+          brand: route.brand || null,
+          search: route.search || ''
+        });
       }
+      if (route.activeProduct) {
+        setActiveProduct(route.activeProduct);
+      }
+      if (route.activeArticle) {
+        setActiveArticle(route.activeArticle);
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     };
-    handleHash();
-    window.addEventListener('hashchange', handleHash);
-    return () => window.removeEventListener('hashchange', handleHash);
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   const handleNavigate = (page, options = {}) => {
     if (page === 'brands') {
       if (currentPage !== 'home') {
+        window.history.pushState(null, '', '/');
         setCurrentPage('home');
       }
       setTimeout(() => {
@@ -251,7 +346,11 @@ export default function App() {
       return;
     }
 
-    window.location.hash = `#/${page}`;
+    const targetPath = getPathForPage(page, options);
+    if (typeof window !== 'undefined' && (window.location.pathname + window.location.search) !== targetPath) {
+      window.history.pushState(options, '', targetPath);
+    }
+
     setCurrentPage(page);
     if (page === 'catalog') {
       setCatalogFilters({
@@ -273,12 +372,18 @@ export default function App() {
   const handleSelectProduct = (product) => {
     setActiveProduct(product);
     setCurrentPage('product-detail');
+    if (product && product.id) {
+      window.history.pushState(null, '', `/product/${product.id}`);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSelectArticle = (article) => {
     setActiveArticle(article);
     setCurrentPage('article-detail');
+    if (article && (article.slug || article.id)) {
+      window.history.pushState(null, '', `/blogs/${article.slug || article.id}`);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -525,6 +630,21 @@ export default function App() {
           <ContactPage
             onNavigate={handleNavigate}
           />
+        )}
+
+        {/* Customer Testimonials Dedicated Page */}
+        {currentPage === 'testimonials' && (
+          <div className="bg-surface-50 min-h-screen py-10 text-left">
+            <div className="max-w-page mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+              <nav className="flex items-center gap-2 text-xs text-surface-500">
+                <button onClick={() => handleNavigate('home')} className="hover:text-surface-900 transition-colors">Home</button>
+                <ChevronRight className="w-3.5 h-3.5 text-surface-400" />
+                <span className="text-surface-900 font-semibold">Testimonials</span>
+              </nav>
+            </div>
+            <TestimonialsSection onNavigate={handleNavigate} />
+            <ConsultationCTA onOpenConsultation={() => setIsConsultationOpen(true)} />
+          </div>
         )}
 
         {/* Dedicated Product Detail Page (Replaces Popup Modal) */}

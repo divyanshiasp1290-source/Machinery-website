@@ -46,13 +46,14 @@ export default function CategoryGrid({ onSelectCategory, onExploreAll }) {
             </h2>
           </div>
 
-          <button
-            onClick={onExploreAll}
-            className="text-xs sm:text-sm font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1.5 transition-colors self-start sm:self-auto"
+          <a
+            href="/catalog"
+            onClick={(e) => { e.preventDefault(); if (onExploreAll) onExploreAll(); }}
+            className="text-xs sm:text-sm font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1.5 transition-colors self-start sm:self-auto cursor-pointer"
           >
             <span>View All Categories</span>
             <ArrowRight className="w-4 h-4" />
-          </button>
+          </a>
         </div>
 
         {/* Clean 6 Category Cards Grid */}

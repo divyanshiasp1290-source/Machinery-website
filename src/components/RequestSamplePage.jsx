@@ -59,12 +59,13 @@ export default function RequestSamplePage({ onNavigate }) {
         
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center gap-2 text-xs text-surface-500 mb-6">
-          <button 
-            onClick={() => onNavigate('home')} 
+          <a 
+            href="/"
+            onClick={(e) => { e.preventDefault(); onNavigate('home'); }} 
             className="hover:text-brand-600 transition-colors cursor-pointer"
           >
             Home
-          </button>
+          </a>
           <ChevronRight className="w-3.5 h-3.5 text-surface-400" />
           <span className="text-surface-900 font-semibold">Request a Sample</span>
         </nav>

@@ -13,14 +13,18 @@ export default function Footer({
           
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center gap-2.5">
+            <a 
+              href="/"
+              onClick={(e) => { e.preventDefault(); onNavigate('home'); }}
+              className="inline-flex items-center gap-2.5 focus:outline-none"
+            >
               <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center text-white shadow-sm">
                 <Layers className="w-4 h-4" />
               </div>
               <span className="font-display text-xl font-black text-white tracking-tight">
                 SOFT <span className="text-brand-500">3D</span>
               </span>
-            </div>
+            </a>
 
             <p className="text-surface-400 text-xs sm:text-sm leading-relaxed max-w-sm">
               SOFT 3D Spółka z o.o. — Premier distributor of industrial 3D printers, large-format LFAM systems, 3D scanners, and certified engineering materials.
@@ -45,34 +49,58 @@ export default function Footer({
             </h4>
             <ul className="space-y-2 text-surface-400 text-xs">
               <li>
-                <button onClick={() => onSelectCategory('industrial-fdm')} className="hover:text-white transition-colors">
+                <a 
+                  href="/catalog"
+                  onClick={(e) => { e.preventDefault(); onSelectCategory('industrial-fdm'); }}
+                  className="hover:text-white transition-colors block"
+                >
                   Industrial 3D Printers
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => onSelectCategory('large-format')} className="hover:text-white transition-colors">
+                <a 
+                  href="/catalog"
+                  onClick={(e) => { e.preventDefault(); onSelectCategory('large-format'); }}
+                  className="hover:text-white transition-colors block"
+                >
                   Large Format LFAM
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => onSelectCategory('large-format')} className="hover:text-white transition-colors">
+                <a 
+                  href="/catalog"
+                  onClick={(e) => { e.preventDefault(); onSelectCategory('large-format'); }}
+                  className="hover:text-white transition-colors block"
+                >
                   Pellet 3D Printers
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => onSelectCategory('high-temp')} className="hover:text-white transition-colors">
+                <a 
+                  href="/catalog"
+                  onClick={(e) => { e.preventDefault(); onSelectCategory('high-temp'); }}
+                  className="hover:text-white transition-colors block"
+                >
                   High Temp PEEK / ULTEM
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => onSelectCategory('sls-powder')} className="hover:text-white transition-colors">
+                <a 
+                  href="/catalog"
+                  onClick={(e) => { e.preventDefault(); onSelectCategory('sls-powder'); }}
+                  className="hover:text-white transition-colors block"
+                >
                   SLS Powder Bed
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => onSelectCategory('resin-sla')} className="hover:text-white transition-colors">
+                <a 
+                  href="/catalog"
+                  onClick={(e) => { e.preventDefault(); onSelectCategory('resin-sla'); }}
+                  className="hover:text-white transition-colors block"
+                >
                   Resin SLA / DLP
-                </button>
+                </a>
               </li>
             </ul>
           </div>
@@ -84,29 +112,49 @@ export default function Footer({
             </h4>
             <ul className="space-y-2 text-surface-400 text-xs">
               <li>
-                <button onClick={() => onNavigate('services')} className="hover:text-white transition-colors">
+                <a 
+                  href="/services"
+                  onClick={(e) => { e.preventDefault(); onNavigate('services'); }}
+                  className="hover:text-white transition-colors block"
+                >
                   360° Additive Solutions
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => onNavigate('services')} className="hover:text-white transition-colors">
+                <a 
+                  href="/services"
+                  onClick={(e) => { e.preventDefault(); onNavigate('services'); }}
+                  className="hover:text-white transition-colors block"
+                >
                   AM Audits &amp; Consultancy
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => onSelectCategory('scanners')} className="hover:text-white transition-colors">
+                <a 
+                  href="/catalog"
+                  onClick={(e) => { e.preventDefault(); onSelectCategory('scanners'); }}
+                  className="hover:text-white transition-colors block"
+                >
                   3D Scanning Services
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => onNavigate('brands')} className="hover:text-white transition-colors">
+                <a 
+                  href="/#brands"
+                  onClick={(e) => { e.preventDefault(); onNavigate('brands'); }}
+                  className="hover:text-white transition-colors block"
+                >
                   Shop By Brand
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => onNavigate('blogs')} className="hover:text-white transition-colors">
+                <a 
+                  href="/blogs"
+                  onClick={(e) => { e.preventDefault(); onNavigate('blogs'); }}
+                  className="hover:text-white transition-colors block"
+                >
                   Case Studies &amp; Blog
-                </button>
+                </a>
               </li>
             </ul>
           </div>
@@ -118,19 +166,31 @@ export default function Footer({
             </h4>
             <ul className="space-y-2 text-surface-400 text-xs">
               <li>
-                <button onClick={() => onNavigate('about')} className="hover:text-white transition-colors">
+                <a 
+                  href="/about"
+                  onClick={(e) => { e.preventDefault(); onNavigate('about'); }}
+                  className="hover:text-white transition-colors block"
+                >
                   About Us
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => onNavigate('contact')} className="hover:text-white transition-colors">
+                <a 
+                  href="/contact"
+                  onClick={(e) => { e.preventDefault(); onNavigate('contact'); }}
+                  className="hover:text-white transition-colors block"
+                >
                   Contact &amp; Support
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={() => onNavigate('request-sample')} className="hover:text-white transition-colors text-brand-400 font-semibold">
+                <a 
+                  href="/request-sample"
+                  onClick={(e) => { e.preventDefault(); onNavigate('request-sample'); }}
+                  className="hover:text-white transition-colors text-brand-400 font-semibold block"
+                >
                   Request a Sample
-                </button>
+                </a>
               </li>
             </ul>
           </div>
@@ -143,9 +203,9 @@ export default function Footer({
             © {new Date().getFullYear()} SOFT 3D Spółka z o.o. All rights reserved.
           </div>
           <div className="flex flex-wrap items-center gap-4 sm:gap-6 justify-center sm:justify-end">
-            <button onClick={() => onNavigate('about')} className="hover:text-surface-300">About</button>
-            <button onClick={() => onNavigate('blogs')} className="hover:text-surface-300">Case Studies</button>
-            <button onClick={() => onNavigate('contact')} className="hover:text-surface-300">Contact</button>
+            <a href="/about" onClick={(e) => { e.preventDefault(); onNavigate('about'); }} className="hover:text-surface-300">About</a>
+            <a href="/blogs" onClick={(e) => { e.preventDefault(); onNavigate('blogs'); }} className="hover:text-surface-300">Case Studies</a>
+            <a href="/contact" onClick={(e) => { e.preventDefault(); onNavigate('contact'); }} className="hover:text-surface-300">Contact</a>
           </div>
         </div>
       </div>

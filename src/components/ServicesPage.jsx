@@ -86,7 +86,7 @@ export default function ServicesPage({ onNavigate, onOpenConsultation }) {
         
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-xs text-surface-500 mb-6">
-          <button onClick={() => onNavigate('home')} className="hover:text-surface-900">Home</button>
+          <a href="/" onClick={(e) => { e.preventDefault(); onNavigate('home'); }} className="hover:text-surface-900 transition-colors">Home</a>
           <ChevronRight className="w-3.5 h-3.5 text-surface-400" />
           <span className="text-surface-900 font-semibold">Services &amp; 360 Additive Solutions</span>
         </nav>

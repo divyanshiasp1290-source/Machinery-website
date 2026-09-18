@@ -34,23 +34,25 @@ export default function CartPage({
         {/* Breadcrumbs Navigation */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-surface-200">
           <div className="flex items-center gap-2 text-xs text-surface-500">
-            <button 
-              onClick={() => onNavigate('home')} 
+            <a 
+              href="/"
+              onClick={(e) => { e.preventDefault(); onNavigate('home'); }} 
               className="hover:text-brand-600 transition-colors cursor-pointer"
             >
               Home
-            </button>
+            </a>
             <ChevronRight className="w-3.5 h-3.5 text-surface-400" />
             <span className="font-semibold text-surface-900">Cart</span>
           </div>
 
-          <button
-            onClick={() => onNavigate('catalog')}
+          <a
+            href="/catalog"
+            onClick={(e) => { e.preventDefault(); onNavigate('catalog'); }}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-surface-600 hover:text-brand-600 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Continue Shopping</span>
-          </button>
+          </a>
         </div>
 
         {/* Page Header */}

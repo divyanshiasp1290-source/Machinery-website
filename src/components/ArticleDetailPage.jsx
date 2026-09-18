@@ -164,19 +164,21 @@ export default function ArticleDetailPage({
         {/* Breadcrumbs Navigation - Full Screen Width */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-surface-200">
           <div className="flex items-center gap-2 text-xs text-surface-500 flex-wrap">
-            <button 
-              onClick={() => onNavigate('home')} 
+            <a 
+              href="/"
+              onClick={(e) => { e.preventDefault(); onNavigate('home'); }} 
               className="hover:text-brand-600 transition-colors cursor-pointer"
             >
               Home
-            </button>
+            </a>
             <ChevronRight className="w-3.5 h-3.5 text-surface-400" />
-            <button 
-              onClick={() => onNavigate('blogs')} 
+            <a 
+              href="/blogs"
+              onClick={(e) => { e.preventDefault(); onNavigate('blogs'); }} 
               className="hover:text-brand-600 transition-colors cursor-pointer"
             >
               Knowledge Centre &amp; Blog
-            </button>
+            </a>
             <ChevronRight className="w-3.5 h-3.5 text-surface-400" />
             <span className="font-semibold text-surface-700">{article.category}</span>
           </div>

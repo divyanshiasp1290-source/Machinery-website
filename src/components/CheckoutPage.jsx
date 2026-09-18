@@ -224,30 +224,33 @@ export default function CheckoutPage({
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center justify-between gap-4 mb-6 pb-4 border-b border-surface-200">
           <div className="flex items-center gap-2 text-xs text-surface-500">
-            <button 
-              onClick={() => onNavigate('home')} 
+            <a 
+              href="/"
+              onClick={(e) => { e.preventDefault(); onNavigate('home'); }} 
               className="hover:text-brand-600 transition-colors cursor-pointer"
             >
               Home
-            </button>
+            </a>
             <ChevronRight className="w-3.5 h-3.5 text-surface-400" />
-            <button 
-              onClick={() => onNavigate('cart')} 
+            <a 
+              href="/cart"
+              onClick={(e) => { e.preventDefault(); onNavigate('cart'); }} 
               className="hover:text-brand-600 transition-colors cursor-pointer"
             >
               Cart
-            </button>
+            </a>
             <ChevronRight className="w-3.5 h-3.5 text-surface-400" />
             <span className="font-semibold text-surface-900">Checkout</span>
           </div>
 
-          <button
-            onClick={() => onNavigate('cart')}
+          <a
+            href="/cart"
+            onClick={(e) => { e.preventDefault(); onNavigate('cart'); }}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-surface-600 hover:text-brand-600 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Return to Cart</span>
-          </button>
+          </a>
         </nav>
 
         {/* Header Title */}

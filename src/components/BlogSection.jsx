@@ -41,13 +41,14 @@ export default function BlogSection({ onNavigate, onSelectArticle }) {
           <p className="text-base text-surface-600 mb-4">
             Insightful articles, get tips and read the latest news related to our industry.
           </p>
-          <button
-            onClick={() => onNavigate('blogs')}
-            className="text-sm font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1.5 transition-colors inline-flex"
+          <a
+            href="/blogs"
+            onClick={(e) => { e.preventDefault(); onNavigate('blogs'); }}
+            className="text-sm font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1.5 transition-colors inline-flex cursor-pointer"
           >
             <span>View more</span>
             <ArrowRight className="w-4 h-4" />
-          </button>
+          </a>
         </div>
 
         {/* 3 Clean Articles Grid with Uniform Sizing */}

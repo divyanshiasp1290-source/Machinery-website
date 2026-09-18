@@ -45,20 +45,22 @@ export default function Hero({ onExploreCatalog, onOpenConsultation, onRequestSa
 
           {/* Primary & Secondary CTAs */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-3.5 sm:gap-4 pt-2">
-            <button
-              onClick={onExploreCatalog}
+            <a
+              href="/catalog"
+              onClick={(e) => { e.preventDefault(); if (onExploreCatalog) onExploreCatalog(); }}
               className="w-full sm:w-auto px-7 py-3.5 sm:px-8 sm:py-4 bg-brand-500 hover:bg-brand-600 text-white font-bold text-sm sm:text-base uppercase tracking-wider rounded-xl transition-all duration-200 flex items-center justify-center gap-2.5 shadow-brand-glow hover:translate-x-0.5 cursor-pointer"
             >
               <span>Explore 3D Printers</span>
               <ArrowRight className="w-5 h-5" />
-            </button>
+            </a>
 
-            <button
-              onClick={onRequestSample || onOpenConsultation}
+            <a
+              href="/request-sample"
+              onClick={(e) => { e.preventDefault(); if (onRequestSample) onRequestSample(); else if (onOpenConsultation) onOpenConsultation(); }}
               className="w-full sm:w-auto px-7 py-3.5 sm:px-8 sm:py-4 bg-surface-900/80 hover:bg-surface-800 text-white font-semibold text-sm sm:text-base uppercase tracking-wider rounded-xl border border-white/20 backdrop-blur-md transition-all duration-200 text-center justify-center flex items-center cursor-pointer"
             >
               Request a Sample
-            </button>
+            </a>
           </div>
 
           {/* Trust Highlights */}
