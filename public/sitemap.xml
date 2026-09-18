@@ -1,66 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Homepage -->
+  <!-- Homepage: Sole canonical public entrypoint for hash-routed SPA -->
   <url>
     <loc>https://machinery-website.vercel.app/</loc>
-    <lastmod>2026-09-16</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
-  </url>
-
-  <!-- Product Catalog -->
-  <url>
-    <loc>https://machinery-website.vercel.app/catalog</loc>
-    <lastmod>2026-09-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <!-- 360 Additive Solutions & Services -->
-  <url>
-    <loc>https://machinery-website.vercel.app/services</loc>
-    <lastmod>2026-09-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- Technical Insights & Blog Case Studies -->
-  <url>
-    <loc>https://machinery-website.vercel.app/blogs</loc>
-    <lastmod>2026-09-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- Request a Sample -->
-  <url>
-    <loc>https://machinery-website.vercel.app/request-sample</loc>
-    <lastmod>2026-09-16</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- About Us -->
-  <url>
-    <loc>https://machinery-website.vercel.app/about</loc>
-    <lastmod>2026-09-16</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <!-- Customer Testimonials -->
-  <url>
-    <loc>https://machinery-website.vercel.app/testimonials</loc>
-    <lastmod>2026-09-16</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <!-- Contact & Engineering Support -->
-  <url>
-    <loc>https://machinery-website.vercel.app/contact</loc>
-    <lastmod>2026-09-16</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
   </url>
 </urlset>
